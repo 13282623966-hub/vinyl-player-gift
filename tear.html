@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>To 仲夏夜 · 撕拉寄语</title>
+  <style>
+    :root { --bg:#0a0a0a; --fg:#f5f5f5; --gold:#e0b878; --dim:#aaa; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html,body { width:100%; height:100%; background:var(--bg); color:var(--fg); font-family:"Inter","Helvetica Neue",sans-serif; overflow:hidden; }
+
+    .stage { position:fixed; inset:0; overflow:hidden; user-select:none; -webkit-user-select:none; cursor:grab; }
+    .stage.grabbing { cursor:grabbing; }
+
+    /* ===== 每页 ===== */
+    .page { position:absolute; inset:0; display:none; flex-direction:row; will-change:transform; }
+    .page.active { display:flex; }
+    .page.alt { flex-direction:row-reverse; }
+
+    /* ===== 图片区 ===== */
+    .pic { display:flex; align-items:center; justify-content:center; background:#0d0d0d; overflow:hidden; }
+    .pic img { display:block; object-fit:contain; max-width:100%; max-height:100%; }
+
+    /* 普通页：图片占 50% */
+    .page:not(.cover):not(.wide) .pic { flex:1 1 50%; }
+    /* 封面 & 尾页：图片占 58% */
+    .page.cover .pic { flex:1 1 58%; }
+    /* 横图页：图片占 62% */
+    .page.wide .pic { flex:1 1 62%; }
+    .page.wide .txt { flex:0 1 38%; }
+
+    /* ===== 文字区 ===== */
+    .txt { overflow-y:auto; background:var(--bg); display:flex; flex-direction:column; justify-content:center; }
+    .page:not(.cover) .txt { flex:1 1 50%; padding:clamp(16px,3vh,40px) clamp(14px,2.5vw,36px); }
+    .page.cover .txt { flex:0 1 42%; padding:clamp(16px,3vh,40px) clamp(14px,2.5vw,36px); }
+
+    .txt .title { font-family:"Playfair Display",serif; font-size:clamp(18px,2.5vw,30px); color:var(--fg); margin-bottom:16px; }
+    .txt .title::after { content:''; display:block; width:40px; height:1px; background:var(--gold); margin-top:10px; opacity:.5; }
+    .page.cover .txt .title { font-size:clamp(22px,3.5vw,38px); text-align:center; }
+    .page.cover .txt .title::after { width:60px; margin:12px auto 0; }
+    .txt .h3 { font-family:"Playfair Display",serif; font-size:clamp(13px,1.5vw,18px); color:var(--gold); margin:14px 0 4px; }
+    .txt .p { font-size:clamp(11px,1.2vw,14px); color:#ededed; line-height:1.85; margin-bottom:7px; text-align:left; word-break:break-word; }
+    .page.cover .txt .p { text-align:center; }
+    .txt .en { font-family:"Playfair Display",serif; font-style:italic; font-size:clamp(11px,1.2vw,14px); color:var(--gold); margin:5px 0 5px 1em; line-height:1.7; border-left:2px solid rgba(224,184,120,.25); padding-left:10px; }
+
+    /* ===== UI 层 ===== */
+    .hint { position:absolute;left:0;right:0;bottom:14px;z-index:4;text-align:center;font-size:10px;letter-spacing:.3em;color:var(--dim);pointer-events:none;animation:breathe 2.8s ease-in-out infinite; }
+    .hint.off { opacity:0; animation:none; transition:opacity .45s; }
+    @keyframes breathe { 0%,100%{opacity:.25} 50%{opacity:.7} }
+
+    .pager { position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:5;display:flex;gap:10px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .55s,visibility 0s linear .55s; }
+    .pager.show { opacity:1;visibility:visible;pointer-events:auto;transition:opacity .55s .15s,visibility 0s linear 0s; }
+    .pager-btn { padding:7px 18px;background:rgba(10,10,10,.8);border:1px solid rgba(224,184,120,.4);color:var(--gold);font-size:10px;letter-spacing:.22em;text-transform:uppercase;cursor:pointer;border-radius:3px;transition:background .3s,color .3s; }
+    .pager-btn:hover { background:rgba(224,184,120,.1);color:#f5deb3; }
+
+    .reset-btn { position:absolute;top:14px;left:14px;z-index:4;padding:5px 12px;background:transparent;border:1px solid rgba(255,255,255,.1);color:var(--dim);font-size:9px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;border-radius:3px;opacity:.45;transition:opacity .45s,border-color .3s,color .3s; }
+    .reset-btn:hover { color:#fff;border-color:rgba(255,255,255,.3);opacity:1; }
+
+    @media (max-width:640px) {
+      .page, .page.alt { flex-direction:column; }
+      .pic { flex:0 0 40vh !important; }
+      .txt { flex:1 1 auto !important; padding:clamp(12px,2.5vh,24px) clamp(10px,3vw,20px) !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage" id="stage">
+
+    <!-- ===== 页0：封面（左图58% + 右文42%） ===== -->
+    <div class="page active cover" id="page0">
+      <div class="pic"><img src="./assets/tear/page-cover.jpg" alt="封面"></div>
+      <div class="txt">
+        <div class="title">To 仲夏夜</div>
+        <div class="p">给 张馨尹 的 20 岁生日礼物</div>
+      </div>
+    </div>
+
+    <!-- ===== 页1：xhs+lxy（右图 + 左文） ===== -->
+    <div class="page alt wide" id="page1">
+      <div class="pic"><img src="./assets/tear/page-bg-1.jpg" alt=""></div>
+      <div class="txt">
+        <div class="title">关于 xhs 和 lxy 的事情</div>
+        <div class="h3">关于 xhs</div>
+        <div class="p">啊啊啊这件事真的超级尴尬，我很怕你会觉得我每天都盯着你，但是我真的是在搜索浙江理工大学的时候不小心点到，惊慌失措想把号注销，又有点舍不得自己写的帖子，就想换一下头像企图蒙混过关🙃。</div>
+        <div class="p">还有有的时候我发朋友圈，我怕你觉得是故意仅你可见的。其实我是仅一小部分人可见，在他们面前我有勇气做真实的自己。</div>
+        <div class="h3">关于 lxy 的事情</div>
+        <div class="p">我一直记得你当时不太舒服，我很抱歉你因为这件事被人嘲笑。但是我觉得其中失去了一些上下文，会放大我做的不好的部分。不管怎样我是有做的不合适的地方，我之前已经向她道歉了，也希望能减轻一点对你的影响。</div>
+        <div class="p">和其它人的事情想了很久还有什么，我思来想去只想到两个事情可能会引起误会。一个是互评签字确认学委放在宿舍楼里面，我让一位学姐帮我拿一下；另一个是我在食堂吃饭，一位学姐突然坐到我前面，用英语和我讲话，邀请我参加一个英语角活动。</div>
+      </div>
+    </div>
+
+    <!-- ===== 页2：关于我/哥哥/少年（左图 + 右文） ===== -->
+    <div class="page" id="page2">
+      <div class="pic"><img src="./assets/tear/page-bg-2.jpg" alt=""></div>
+      <div class="txt">
+        <div class="title">关于我</div>
+        <div class="p">我想自己不是一个太糟糕的人，为了自己的目的就不择手段，我只是习惯以目标倒推的思维方式，所以我做事时会明确自己想要的结果。但不意味着我只考虑自己的利益，我想我有很多无私的时候。</div>
+        <div class="h3">我是一位哥哥</div>
+        <div class="p">我很爱我的弟弟，我从来没有对他大声说过话。在大一那年他刚上高中，几乎每一天我都倾听他的烦心事，陪伴他的成长。我没有想要得到什么，我只是希望他能有一个开心的少年时光，因为我自己那时候常常也不开心。</div>
+        <div class="h3">我是一位少年</div>
+        <div class="p">刚上大学时，一位女生给我发一些让我不太舒服的话，我没有吐槽或者攻击她，只是找她室友说没有什么兴趣，让她不要发了。担心她自尊心受损，之前答应过和她出去玩，我还是信守了约定。</div>
+        <div class="p">后来也证明是她室友的恶作剧。我当时只是觉得，她可能不知道怎么表达自己的情感，我不愿意去说什么来发泄自己的不满。我没有想为了什么，只是不希望对方受到伤害，更不应该用伤害去回应伤害。</div>
+      </div>
+    </div>
+
+    <!-- ===== 页3：关于我/男性/不太爱笑（右图 + 左文） ===== -->
+    <div class="page alt" id="page3">
+      <div class="pic"><img src="./assets/tear/page-bg-3.jpg" alt=""></div>
+      <div class="txt">
+        <div class="title">关于我</div>
+        <div class="h3">我是一位男性</div>
+        <div class="p">我在生活中也有很多不容易，但是从高中起就开始认真的思考女性主义。我知道在很多人眼里，一个男生说这些会被当成异类——在男性中是，在女性中有人觉得是在装，在父母眼中是太傻。但是我还是努力改变亲人朋友的观念。</div>
+        <div class="p">在高考志愿填报时，我宁可不做这一单，也会劝说家长不要重男轻女，为了儿子放弃女儿，鼓励学生不要只停留在家庭，勇敢追求自己的梦想。也好在看到了一些效果。我没有什么企图，我只是看到了她们的困境，希望能改善哪怕一点点。</div>
+        <div class="h3">我是一位不太爱笑的人</div>
+        <div class="p">平时也比较严肃。但是碰到那些辛苦的体力劳动者，我总会带着微笑说话，尽可能显得温柔。一次在教室自习，两位阿姨进来聊天了很久。我一直没有说什么，等到她们休息下来，才轻声说刚刚我在自习，声音可以稍微小一点。我看到她们眼中有点局促，和我道歉，所以我一直安慰她们工作辛苦了，闲聊了一会。我觉得她们年纪很大了很不容易，在其他人眼中可能地位卑微。我只是希望她们的生命中多一点善意，也多一些尊重。</div>
+      </div>
+    </div>
+
+    <!-- ===== 页4：关于我/焦虑/男生（左图 + 右文） ===== -->
+    <div class="page" id="page4">
+      <div class="pic"><img src="./assets/tear/page-bg-4.jpg" alt=""></div>
+      <div class="txt">
+        <div class="title">关于我</div>
+        <div class="h3">我是一个有点焦虑的人</div>
+        <div class="p">经常失眠，或者一头扎进信息里研究，期望找到一个最好的选择。</div>
+        <div class="p">我在意自己的前途，也在意很多人，父母、亲人、朋友、爱人、不幸的人、辛苦的人。</div>
+        <div class="p">有时候我看起来好像不在意别人，因为我常常分的太清，观点鲜明又与众不同。</div>
+        <div class="p">但更多时候是因为我已经很疲惫了。</div>
+        <div class="h3">我是一个男生</div>
+        <div class="p">却很大程度上有着女生的一些特质，在同性中常常让人觉得怪异，在异性中又被认为是刻意的、有所企图的。</div>
+        <div class="en">I struggle, begging for kindness, but always fail. I got upset, but never truly lost hope.</div>
+        <div class="p">也许我不是一个好男友，经常过于自负、偏执、固执、焦虑，说话语气生硬，很多时候让你伤心，所以才会让你产生这样的感受。</div>
+        <div class="p">非常感谢过去的那些日子，你让我变成了一个更好的人，我在不断的反思中学会了尊重，包容和善良。但是真是抱歉呀，让你受了那么多的委屈。谢谢你在我的生命里出现过。</div>
+      </div>
+    </div>
+
+    <!-- ===== 页5：生日快乐（右图58% + 左文42%） ===== -->
+    <div class="page cover alt" id="page5">
+      <div class="pic"><img src="./assets/tear/page-bg-last.jpg" alt=""></div>
+      <div class="txt">
+        <div class="title">生日快乐！🎂</div>
+        <div class="p">不絮絮叨叨了，祝你生日快乐呀，过了今天就 20 岁了，也是一个 2 岁的成年人啦。</div>
+        <div class="p">希望你天天开心，生活被善意包裹，善良的人理应受到世界温柔的对待。希望你能更开心一点，幸福一点，早日实现自己的梦想！🍎🍎安安呀</div>
+        <div class="p">对了，我还有一个小礼物，我不知道你是不是已经回温州了，那我应该寄给你嘛，要是你还在上海我就自己给你好了，我担心有点容易压坏。</div>
+      </div>
+    </div>
+
+    <!-- ===== UI ===== -->
+    <p class="hint" id="hint">按住鼠标向左拖拽 · 撕开</p>
+    <div class="pager" id="pager">
+      <button class="pager-btn" id="prev-btn">← 上一页</button>
+      <button class="pager-btn" id="next-btn">下一页 →</button>
+    </div>
+    <button class="reset-btn" id="reset-btn" title="回到封面">↻ 封面</button>
+    <span style="position:fixed;bottom:3px;right:3px;font-size:7px;color:#444;z-index:9999;pointer-events:none">v28</span>
+  </main>
+
+  <script>
+    (function () {
+      var pages    = document.querySelectorAll('.page');
+      var total    = pages.length;
+      var cur      = 0;
+      var stage    = document.getElementById('stage');
+      var pager    = document.getElementById('pager');
+      var hint     = document.getElementById('hint');
+      var prevBtn  = document.getElementById('prev-btn');
+      var nextBtn  = document.getElementById('next-btn');
+      var resetBtn = document.getElementById('reset-btn');
+
+      function show(idx) {
+        pages.forEach(function (p) { p.classList.remove('active'); });
+        pages[idx].classList.add('active');
+        cur = idx;
+        if (idx > 0) { pager.classList.add('show'); hint.classList.add('off'); }
+        else         { pager.classList.remove('show'); hint.classList.remove('off'); }
+      }
+
+      // ===== 鼠标拖拽撕页 =====
+      var down = false, startX = 0, startY = 0;
+      var dragging = false;
+
+      stage.addEventListener('mousedown', function (e) {
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return;
+        down = true;
+        dragging = false;
+        startX = e.clientX;
+        startY = e.clientY;
+        stage.classList.add('grabbing');
+        pages[cur].style.transition = 'none';
+      });
+
+      window.addEventListener('mousemove', function (e) {
+        if (!down) return;
+        var dx = e.clientX - startX;
+        var dy = e.clientY - startY;
+        if (Math.abs(dx) > 8) dragging = true;
+        // 实时偏移当前页（模拟撕纸的手感）
+        pages[cur].style.transform = 'translateX(' + dx + 'px) rotate(' + (dx * 0.015) + 'deg)';
+        pages[cur].style.opacity = Math.max(0.35, 1 - Math.abs(dx) / window.innerWidth * 1.5);
+      });
+
+      window.addEventListener('mouseup', function (e) {
+        if (!down) return;
+        down = false;
+        stage.classList.remove('grabbing');
+        pages[cur].style.transition = 'transform 0.4s ease, opacity 0.4s ease';
+        pages[cur].style.opacity = '1';
+
+        var dx = e.clientX - startX;
+        if (Math.abs(dx) > 60 && dragging) {
+          // 撕开
+          pages[cur].style.transform = (dx > 0 ? 'translateX(120%)' : 'translateX(-120%)') + ' rotate(' + (dx > 0 ? 15 : -15) + 'deg)';
+          pages[cur].style.opacity = '0';
+          setTimeout(function () {
+            pages[cur].style.transition = 'none';
+            pages[cur].style.transform = '';
+            pages[cur].style.opacity = '1';
+            var n = dx < 0 ? cur + 1 : cur - 1;
+            if (n < 0) n = total - 1;
+            if (n >= total) n = 0;
+            show(n);
+          }, 350);
+        } else {
+          // 回弹
+          pages[cur].style.transform = 'translateX(0) rotate(0deg)';
+          setTimeout(function () { pages[cur].style.transition = 'none'; }, 400);
+        }
+      });
+
+      // ===== 触屏滑动 =====
+      var touchStartX = 0;
+      stage.addEventListener('touchstart', function (e) {
+        if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return;
+        down = true; dragging = false;
+        startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+        pages[cur].style.transition = 'none';
+      }, { passive: false });
+      stage.addEventListener('touchmove', function (e) {
+        if (!down) return;
+        var dx = e.touches[0].clientX - startX;
+        if (Math.abs(dx) > 8) dragging = true;
+        pages[cur].style.transform = 'translateX(' + dx + 'px) rotate(' + (dx * 0.015) + 'deg)';
+        pages[cur].style.opacity = Math.max(0.35, 1 - Math.abs(dx) / window.innerWidth * 1.5);
+      }, { passive: false });
+      stage.addEventListener('touchend', function (e) {
+        if (!down) return;
+        down = false;
+        pages[cur].style.transition = 'transform 0.4s ease, opacity 0.4s ease';
+        pages[cur].style.opacity = '1';
+
+        var dx = (e.changedTouches[0].clientX - startX);
+        if (Math.abs(dx) > 60 && dragging) {
+          pages[cur].style.transform = (dx > 0 ? 'translateX(120%)' : 'translateX(-120%)') + ' rotate(' + (dx > 0 ? 15 : -15) + 'deg)';
+          pages[cur].style.opacity = '0';
+          setTimeout(function () {
+            pages[cur].style.transition = 'none';
+            pages[cur].style.transform = '';
+            pages[cur].style.opacity = '1';
+            var n = dx < 0 ? cur + 1 : cur - 1;
+            if (n < 0) n = total - 1;
+            if (n >= total) n = 0;
+            show(n);
+          }, 350);
+        } else {
+          pages[cur].style.transform = 'translateX(0) rotate(0deg)';
+          setTimeout(function () { pages[cur].style.transition = 'none'; }, 400);
+        }
+      });
+
+      // ===== 按钮翻页 =====
+      prevBtn.addEventListener('click', function (e) { e.stopPropagation(); var n = cur - 1; if (n < 0) n = total - 1; show(n); });
+      nextBtn.addEventListener('click', function (e) { e.stopPropagation(); var n = cur + 1; if (n >= total) n = 0; show(n); });
+      resetBtn.addEventListener('click', function () { show(0); });
+    })();
+  </script>
+</body>
+</html>

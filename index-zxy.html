@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For 张馨尹 · Eternal Blossoms</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Elegant Fonts for High-End Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,500;1,300&family=Noto+Serif+SC:wght@200;300;400;600&display=swap" rel="stylesheet">
+    <!-- GSAP & ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
+    <!-- Three.js for Premium Floating 3D Heart Particle System -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Noto Serif SC', 'Cormorant Garamond', serif;
+            background-color: #0c0512; /* Ultra deep warm violet night garden */
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            cursor: default;
+        }
+        .serif-font {
+            font-family: 'Cormorant Garamond', 'Noto Serif SC', serif;
+        }
+        .display-font {
+            font-family: 'Cinzel', 'Noto Serif SC', serif;
+        }
+
+        /* Warm Rose Gold Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0c0512;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(217, 125, 122, 0.25);
+            border-radius: 2px;
+            transition: background 0.3s;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(223, 184, 119, 0.6);
+        }
+
+        /* Outer Card Wrapper (Strictly Scroll-Driven by GSAP) */
+        .card {
+            transform: translateZ(0);
+            touch-action: none;
+        }
+
+        /* Inner Interactive Container (Strictly Hover, Drag, & Rotate-Driven) */
+        .card-inner {
+            background: linear-gradient(135deg, rgb(20, 8, 23) 0%, rgb(10, 4, 12) 100%);
+            border: 1px solid rgba(217, 125, 122, 0.16);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            isolation: isolate;
+            --drag-x: 0px;
+            --drag-y: 0px;
+            will-change: transform;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        /* Satin Foil Shimmer Overlay on hover */
+        .foil-shine {
+            mix-blend-mode: screen;
+            opacity: 0;
+            pointer-events: none;
+            background: radial-gradient(circle at 50% 50%, rgba(255, 210, 210, 0.2) 0%, rgba(217, 125, 122, 0.08) 50%, transparent 80%);
+            opacity: 0;
+        }
+
+        .glass-panel {
+            background: rgba(12, 5, 15, 0.98);
+            border: 1px solid rgba(217, 125, 122, 0.25);
+            box-shadow: 0 25px 50px -10px rgba(0, 0, 0, 0.85);
+        }
+
+        /* Layout boundaries for blossom-converging poem layers */
+        .poem-wrapper {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            text-align: center;
+            padding-left: 1rem;
+            padding-right: 5rem;
+        }
+        .poem-line {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .char-box {
+            display: inline-block;
+            transform-style: preserve-3d;
+            will-change: transform, opacity, filter;
+            text-shadow: 0 0 12px rgba(217, 125, 122, 0.35), 0 0 4px rgba(223, 184, 119, 0.2);
+        }
+
+        /* 回到顶部按钮的旋转反馈 */
+        @keyframes reset-spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(-360deg); }
+        }
+        #reset-icon.spin-once {
+            animation: reset-spin 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+    <body class="text-white select-none overflow-y-auto">
+
+    <!-- 背景音乐：单击播放按钮自动启动并与滚动同步；手动滚轮接管时音乐继续播放 -->
+    <audio id="bgm" src="bgm.mp3" loop preload="auto"></audio>
+
+    <!-- Outer scroll track (holds total scroll length of 2000vh: 8 scenes * 250vh) -->
+    <div id="scroll-track" class="relative w-full h-[2000vh] bg-[#0c0512]">
+
+        <!-- Pinned viewport frame -->
+        <div id="viewport" class="fixed top-0 left-0 w-full h-screen overflow-hidden z-10">
+
+            <!-- Three.js WebGL GPU-accelerated Romantic Floating 3D Heart Garden -->
+            <div id="webgl-container" class="absolute inset-0 w-full h-full pointer-events-none z-0"></div>
+
+            <!-- Cinematic Vignettes and Warm Dusk Garden Ambiance -->
+            <div class="absolute inset-0 bg-gradient-to-t from-[#0c0512] via-transparent to-[#0c0512] opacity-85 z-10 pointer-events-none"></div>
+            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(40,12,28,0.4),transparent_80%)] z-10 pointer-events-none"></div>
+
+            <!-- Global Parallax Container for interactive cards -->
+            <div id="cards-parallax-wrapper" class="absolute inset-0 w-full h-full z-20 pointer-events-none">
+                <div id="cards-container" class="w-full h-full flex items-center justify-center overflow-hidden pointer-events-auto" style="touch-action: none;">
+                    <!-- 28 Cards spawned dynamically -->
+                </div>
+            </div>
+
+            <!-- Blossom-Condensation Poem Containers -->
+            <div id="poems-layer" class="absolute inset-0 w-full h-full z-30 pointer-events-none flex items-center justify-center">
+                <!-- 8 Poems programmatically loaded here -->
+            </div>
+
+            <!-- Premium Luxury Header Dedicated to张馨尹 -->
+            <div class="absolute top-20 left-10 right-10 flex justify-between items-start z-40 pointer-events-none">
+                <div class="flex flex-col gap-1">
+                    <span class="text-[#dfb877] text-lg md:text-xl font-bold tracking-[0.3em] display-font">ZXY</span>
+                    <span class="text-[8.5px] text-white/55 tracking-[0.3em] uppercase font-mono">ETERNAL BLOSSOMS · HUA HAI JI YI</span>
+                </div>
+                <div class="flex flex-col text-right items-end gap-1 font-mono text-[9px] text-white/40 tracking-[0.2em] select-none pointer-events-none">
+                    <span id="scene-hud" class="text-white/65">VALLEY: ARRIVAL</span>
+                    <span id="scroll-percent" class="text-[#d97d7a] text-xs font-bold">0%</span>
+                </div>
+            </div>
+
+            <!-- Scroll Indicator -->
+            <div id="scroll-indicator" class="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2 text-white/20 font-mono tracking-[0.25em] text-[9px] z-40 transition-opacity duration-700">
+                <span class="animate-pulse">SCROLL TO CHASE THE BLOSSOMS</span>
+                <span class="text-[7.5px] text-[#dfb877]/60 tracking-widest mt-0.5 uppercase">DRAG CARD CENTER TO MOVE • DOUBLE-CLICK TO REVEAL</span>
+                <svg class="w-3 h-3 animate-bounce mt-1 text-[#d97d7a]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+            </div>
+
+            <!-- Control Button -->
+            <div class="absolute bottom-8 right-10 z-40 flex flex-col items-end gap-2 pointer-events-auto">
+                <div class="flex items-center gap-4">
+                    <button id="reset-btn" title="回到开始 · RESET 0%" class="w-9 h-9 flex items-center justify-center rounded-full bg-[#0c0512]/80 border border-[#dfb877]/30 hover:border-[#dfb877]/65 text-[#dfb877] transition-all duration-300 active:scale-90 shadow-[0_4px_12px_rgba(0,0,0,0.4)]">
+                        <svg id="reset-icon" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12a9 9 0 1 0 2.64-6.36"></path>
+                            <path d="M3 4v5h5"></path>
+                        </svg>
+                    </button>
+                    <button id="autoplay-btn" class="px-3.5 py-2 bg-[#0c0512]/80 border border-[#dfb877]/30 hover:border-[#dfb877]/65 text-[8px] font-mono tracking-widest text-[#dfb877] rounded-md transition-all duration-300 active:scale-95 flex items-center gap-2 shadow-[0_4px_12px_rgba(0,0,0,0.4)]">
+                        <svg id="autoplay-icon" class="w-3.5 h-3.5 text-[#dfb877]" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8 5v14l11-7z"></path>
+                        </svg>
+                        <span id="autoplay-label">播放回忆 · PLAY</span>
+                    </button>
+                    <button id="volume-btn" class="px-3.5 py-2 bg-[#0c0512]/80 border border-[#dfb877]/30 hover:border-[#dfb877]/65 text-[8px] font-mono tracking-widest text-[#dfb877] rounded-md transition-all duration-300 active:scale-95 flex items-center gap-2 shadow-[0_4px_12px_rgba(0,0,0,0.4)]">
+                        <svg id="volume-icon" class="w-3.5 h-3.5 text-[#dfb877]" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3 9v6h4l5 5V4L7 9H3z"></path>
+                            <path d="M16 8a5 5 0 0 1 0 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                        </svg>
+                        <span id="volume-label">VOL 100%</span>
+                    </button>
+                </div>
+                <span class="text-[8px] text-white/35 font-mono tracking-[0.18em] uppercase select-none">滚轮 / ↓ 可手动控制进度</span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Floating Inspector Detail Modal for Card double-clicks -->
+    <div id="inspector-modal" class="fixed inset-0 z-50 flex items-center justify-center pointer-events-none opacity-0 transition-all duration-300 ease-out">
+        <div class="absolute inset-0 bg-black/90 cursor-pointer" onclick="closeInspector()"></div>
+        <div class="glass-panel w-full max-w-2xl rounded-[2rem] p-8 md:p-10 m-4 relative z-10 transform translate-y-8 transition-transform duration-400 ease-out">
+            <button onclick="closeInspector()" class="absolute top-6 right-6 text-white/30 hover:text-white hover:rotate-90 transition-all duration-300 z-30">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <div class="flex flex-col md:flex-row gap-8 items-center justify-center">
+                <div class="w-full md:w-1/2 h-[300px] md:h-[340px] rounded-2xl overflow-hidden border border-[#d97d7a]/30 shadow-[0_10px_25px_rgba(217,125,122,0.15)] bg-[#120714] relative group cursor-pointer" onclick="openLightbox()">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#0c0512] via-transparent to-transparent z-10 pointer-events-none"></div>
+                    <img id="inspect-img" src="" alt="Memory Photo" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    <div class="absolute bottom-3 right-3 z-20 bg-black/60 px-2 py-1 rounded-md text-[7px] font-mono tracking-widest text-[#dfb877]/80 pointer-events-none uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-300">CLICK TO ZOOM</div>
+                </div>
+
+                <div class="w-full md:w-1/2 flex flex-col justify-center text-left">
+                    <div class="text-[8px] font-mono tracking-[0.3em] text-[#dfb877] mb-2 uppercase">[ MY DEAREST MOMENT ]</div>
+                    <h2 id="inspect-title" class="text-2xl md:text-3xl font-bold serif-font tracking-wide text-white mb-4">永恒瞬间</h2>
+
+                    <p id="inspect-lore" class="text-xs md:text-sm text-white/90 leading-relaxed font-light mb-6 serif-font">
+                        这是一段与你共度的美好记忆。
+                    </p>
+                    <button onclick="closeInspector()" class="w-full py-3 bg-gradient-to-r from-[#d97d7a]/15 to-[#dfb877]/15 hover:from-[#d97d7a]/25 hover:to-[#dfb877]/25 active:scale-95 rounded-xl font-mono text-[9px] tracking-[0.2em] uppercase transition-all duration-300 border border-[#d97d7a]/20">
+                        RETURN TO OUR FLOWER SEA
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox Fullscreen Zoom Overlay -->
+    <div id="lightbox-modal" class="fixed inset-0 z-[60] bg-black/95 flex items-center justify-center opacity-0 pointer-events-none transition-all duration-400 ease-out cursor-zoom-out" onclick="closeLightbox()">
+        <img id="lightbox-img" src="" alt="Zoomed Memory" class="max-w-[95%] max-h-[95%] object-contain rounded-2xl shadow-[0_0_50px_rgba(217,125,122,0.35)] transform scale-90 transition-transform duration-400 ease-out">
+        <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-[#dfb877]/60 font-mono text-[8px] tracking-[0.25em] pointer-events-none uppercase">CLICK ANYWHERE TO CLOSE ZOOM</div>
+    </div>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+
+        // 重置回顶期间为 true：抑制 hover 动画，避免与回放重排打架导致闪烁
+        let resetting = false;
+
+        const CARD_COUNT = 28;
+        const SCENE_COUNT = 8;
+
+        // 28 张照片：把你的照片按 photo01.jpg ~ photo28.jpg 命名，放在本 HTML 同一目录下即可
+        const romanticImages = [
+            "photo01.jpg", "photo02.jpg", "photo03.jpg", "photo04.jpg", "photo05.jpg",
+            "photo06.jpg", "photo07.jpg", "photo08.jpg", "photo09.jpg", "photo10.jpg",
+            "photo11.jpg", "photo12.jpg", "photo13.jpg", "photo14.jpg", "photo15.jpg",
+            "photo16.jpg", "photo17.jpg", "photo18.jpg", "photo19.jpg", "photo20.jpg",
+            "photo21.jpg", "photo22.jpg", "photo23.jpg", "photo24.jpg", "photo25.jpg",
+            "photo26.jpg", "photo27.jpg", "photo28.jpg"
+        ];
+
+        const cardMetadata = Array.from({ length: CARD_COUNT }, (_, i) => {
+            const indexStr = String(i + 1).padStart(2, '0');
+            const titles = [
+                "外文十佳歌手 / TOP 10 SINGERS",
+                "海南的海，和你 / THE SEA WITH YOU",
+                "椰林里的光 / LIGHT IN THE GROVE",
+                "文昌的脚印 / FOOTPRINTS ON SAND",
+                "三亚的烟火气 / SANYA FLAVORS",
+                "无锡的烤肉夜 / WUXI BBQ NIGHT",
+                "一笼小笼包的默契 / XIAOLONGBAO MOMENT",
+                "抹茶碎碎冰的夏天 / MATCHA SUMMER",
+                "抱抱小猪 / HUG THE PIG",
+                "无锡猪咖 / WUXI PIG CAFE",
+                "椒盐大虾 / SALTED SHRIMP",
+                "蛋黄南瓜的甜 / PUMPKIN SWEETNESS",
+                "踏步档的猪肘 / TABUDANG PORK",
+                "汪姐姐的甜 / SWEET FROM SISTER WANG",
+                "半熟巴斯克 / BASQUE CHEESECAKE",
+                "刚出炉的蛋挞 / FRESH EGG TART",
+                "青提牛奶冰 / GRAPE MILK ICE",
+                "奥体的西餐厅 / AOTI BISTRO",
+                "今喜的炭火 / JINXI CHARCOAL",
+                "羊腿和啤酒 / LAMB & BEER",
+                "寿喜锅的热气 / SUKIYAKI STEAM",
+                "顺德的干蒸 / SHUNDE DIMSUM",
+                "必胜客的披萨 / PIZZA HUT MEMORY",
+                "寄来的烤肉 / MAILED TO YOU",
+                "冬日的烤红薯 / WINTER YAM",
+                "头顶的小鸭子 / RUBBER DUCK GIRL",
+                "两只小猪 / TWO LITTLE PIGS",
+                "香奈儿玫瑰 / CHANEL ROSES"
+            ];
+
+            const romanticDiary = [
+                "外文十佳歌手的比赛，你表现得真的很棒。一场一场比下来很辛苦，我感到骄傲又心疼。",
+                "那天的海风很大，浪声盖过了一切。站在你身边，连风都变得温柔了。",
+                "阳光穿过椰叶落下来的时候，你刚好抬头笑了一下。那个画面我一直记得。",
+                "沙滩上的脚印被潮水带走了，但那天走在海边的感觉还在。",
+                "在三亚街头啃烤乳猪，满手油也不管。那顿饭吃得很开心。",
+                "无锡那晚饿坏了，等了好久的美式烤肉终于上桌，两人一顿饱餐，疲惫都填满了。",
+                "第一次吃到甜口的小笼包，有点意外，却意外地喜欢。",
+                "那是回杭州前吃的最后一口甜。抹茶有点苦，可那天很甜。",
+                "我抱着小猪，它发出哼哼的声音，这是我第一次去宠物店",
+                "在猪咖我蹲下来逗小猪，你站在旁边看着我们傻。现在想起来还是暖的。",
+                "农家小馆的椒盐大虾，你吃得利落，我就着壳啃也挺香。",
+                "你说蛋黄南瓜很好吃，后来我们又去了很多次。好吃的店，记着就好。",
+                "踏步档的猪肘，是我们常去解馋的一家小店。简单实在，吃着就开心。",
+                "汪姐姐家的甜品，那段时间我们经常。拆开盒子，像收到一份小小的惊喜。",
+                "半熟的巴斯克，一勺下去流心。甜得刚好，便宜又美味。",
+                "肯悦的蛋挞要趁热吃，刚出炉那口最香。好东西，趁热才够味。",
+                "第一次走进学校附近那家甜品店，点了一碗青提牛奶冰。原来好吃的，一直都在附近。",
+                "奥体旁边的西餐厅，那晚灯光柔柔的。我们慢慢吃，慢慢聊。",
+                "今喜烧烤炭火滋滋响，我低头刷手机，你笑我又在发呆。被你笑，倒也不恼。",
+                "啃羊腿不需要优雅，只需要饿。和你吃饭从来不用端着。",
+                "你特别喜欢这家的寿喜烧，在牛绪牛前后吃了三次。看着你喜欢的样子我也很开心。",
+                "干蒸一笼一笼地上，时间也一笼一笼地过。和你吃饭，不赶时间。",
+                "有时候最普通的餐厅，因为坐在对面的人，变得不一样了。",
+                "有些东西隔着一座城市也能尝到味道。但有些温度，只有面对面才有。",
+                "冬天学校便利店买的烤红薯，捧在手里很暖。那样的快乐，有时候很简单。",
+                "你头上顶着那只鸭子自拍，表情特别幽默，有点可爱。",
+                "去年生日送你的两只小猪，不知道现在还陪着你没有。",
+                "花会谢，但送花时想让你开心这件事，不会过期。"
+            ];
+
+            return {
+                title: titles[i] || "MOMENT",
+                desc: `MEMORY ${indexStr}`,
+                img: romanticImages[i] || romanticImages[0],
+                lore: romanticDiary[i] || "这是一段写给张馨尹、永不消散的记忆时光。"
+            };
+        });
+
+        // The elegant poetry set（左右交替避让按钮）
+        const poemsData = [
+            { text: "你是所有方向里 / 我曾认真朝向过的目的地", style: "bounce", top: "32%", left: "50%", entry: 3.0, exit: 9.3 },
+            { text: "命运交错再交错 / 漫漫星河里我们曾照亮过彼此", style: "cross", top: "25%", left: "30%", entry: 4.0, exit: 9.0 },
+            { text: "那一段时光 / 是真的很美好", style: "implode", top: "58%", left: "55%", entry: 3.2, exit: 9.5 },
+            { text: "纵使东风把繁花吹散 / 春天来过就好", style: "fan", top: "8%", left: "50%", entry: 4.0, exit: 9.0 },
+            { text: "时间奔流成浩瀚长河 / 我曾停靠过一处温暖", style: "wave", top: "62%", left: "32%", entry: 4.0, exit: 9.1 },
+            { text: "万千星辰里 / 我曾看见过你的光芒", style: "spiral", top: "30%", left: "55%", entry: 3.0, exit: 9.5 },
+            { text: "世界再大也不过 / 一程又一程", style: "fall", top: "28%", left: "34%", entry: 3.0, exit: 9.6 },
+            { text: "所有的偶然 / 都是让我们各自成为今天的自己的必然", style: "grace-final", top: "50%", left: "50%", entry: 2.5, exit: 10.0 }
+        ];
+
+        const sceneNames = [
+            "ARRIVAL / 晨曦初临",
+            "CROSS / 交错穿行",
+            "GATHER / 向心汇聚",
+            "FAN / 牌堆展开",
+            "GRID / 网格呼吸",
+            "SPIRAL / 螺旋花涡",
+            "HERO / 繁花定格",
+            "DEPART / 永恒归宿"
+        ];
+
+        // LCG Seed Sequences for deterministic randomness
+        const seedSequence = [];
+        let rSeed = 42;
+        for (let i = 0; i < 200; i++) {
+            rSeed = (rSeed * 9301 + 49297) % 233280;
+            seedSequence.push(rSeed / 233280);
+        }
+        function getSeed(idx) {
+            return seedSequence[idx % seedSequence.length];
+        }
+
+        let scene, camera, renderer;
+        let heartGeometry, hearts, goldGeometry, goldDust;
+        const heartCount = 1200;
+        const goldCount = 1500;
+
+        function initWebGL() {
+            const container = document.getElementById("webgl-container");
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x0c0512, 0.0025);
+
+            camera = new THREE.PerspectiveCamera(60, w / h, 0.1, 1000);
+            camera.position.z = 120;
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(w, h);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            const heartCanvas = document.createElement('canvas');
+            heartCanvas.width = 64;
+            heartCanvas.height = 64;
+            const hCtx = heartCanvas.getContext('2d');
+            const hGrad = hCtx.createRadialGradient(32, 32, 2, 32, 32, 30);
+            hGrad.addColorStop(0, 'rgba(255, 198, 208, 1)');
+            hGrad.addColorStop(0.3, 'rgba(217, 125, 122, 0.95)');
+            hGrad.addColorStop(0.8, 'rgba(217, 125, 122, 0.3)');
+            hGrad.addColorStop(1, 'rgba(12, 5, 18, 0)');
+
+            hCtx.fillStyle = hGrad;
+            hCtx.beginPath();
+            hCtx.moveTo(32, 24);
+            hCtx.bezierCurveTo(32, 18, 22, 10, 14, 10);
+            hCtx.bezierCurveTo(4, 10, 4, 25, 4, 25);
+            hCtx.bezierCurveTo(4, 35, 16, 45, 32, 58);
+            hCtx.bezierCurveTo(48, 45, 60, 35, 60, 25);
+            hCtx.bezierCurveTo(60, 25, 60, 10, 50, 10);
+            hCtx.bezierCurveTo(42, 10, 32, 18, 32, 24);
+            hCtx.fill();
+            const heartTexture = new THREE.CanvasTexture(heartCanvas);
+
+            const goldCanvas = document.createElement('canvas');
+            goldCanvas.width = 64;
+            goldCanvas.height = 64;
+            const gCtx = goldCanvas.getContext('2d');
+            const gGrad = gCtx.createRadialGradient(32, 32, 1, 32, 32, 30);
+            gGrad.addColorStop(0, 'rgba(255, 238, 185, 1)');
+            gGrad.addColorStop(0.2, 'rgba(223, 184, 119, 0.85)');
+            gGrad.addColorStop(0.7, 'rgba(223, 184, 119, 0.15)');
+            gGrad.addColorStop(1, 'rgba(12, 5, 18, 0)');
+
+            gCtx.fillStyle = gGrad;
+            gCtx.beginPath();
+            gCtx.arc(32, 32, 30, 0, Math.PI * 2);
+            gCtx.fill();
+            const goldTexture = new THREE.CanvasTexture(goldCanvas);
+
+            heartGeometry = new THREE.BufferGeometry();
+            const hPositions = new Float32Array(heartCount * 3);
+            const hColors = new Float32Array(heartCount * 3);
+            const hCustomData = new Float32Array(heartCount * 2);
+
+            for (let i = 0; i < heartCount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.random() * 120 + 10;
+                const z = Math.random() * 800 - 400;
+
+                hPositions[i * 3] = Math.cos(angle) * radius;
+                hPositions[i * 3 + 1] = Math.sin(angle) * radius;
+                hPositions[i * 3 + 2] = z;
+
+                hColors[i * 3] = 0.98;
+                hColors[i * 3 + 1] = 0.72 + Math.random() * 0.12;
+                hColors[i * 3 + 2] = 0.75 + Math.random() * 0.1;
+
+                hCustomData[i * 2] = Math.random() * Math.PI * 2;
+                hCustomData[i * 2 + 1] = 0.3 + Math.random() * 0.6;
+            }
+
+            heartGeometry.setAttribute('position', new THREE.BufferAttribute(hPositions, 3));
+            heartGeometry.setAttribute('color', new THREE.BufferAttribute(hColors, 3));
+            heartGeometry.setAttribute('customData', new THREE.BufferAttribute(hCustomData, 2));
+
+            const heartMaterial = new THREE.PointsMaterial({
+                size: 5.5,
+                map: heartTexture,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.9,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            hearts = new THREE.Points(heartGeometry, heartMaterial);
+            scene.add(hearts);
+
+            goldGeometry = new THREE.BufferGeometry();
+            const gPositions = new Float32Array(goldCount * 3);
+            const gColors = new Float32Array(goldCount * 3);
+            const gCustomData = new Float32Array(goldCount * 2);
+
+            for (let i = 0; i < goldCount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.random() * 110 + 5;
+                const z = Math.random() * 800 - 400;
+
+                gPositions[i * 3] = Math.cos(angle) * radius;
+                gPositions[i * 3 + 1] = Math.sin(angle) * radius;
+                gPositions[i * 3 + 2] = z;
+
+                gColors[i * 3] = 1.0;
+                gColors[i * 3 + 1] = 0.85 + Math.random() * 0.15;
+                gColors[i * 3 + 2] = 0.45 + Math.random() * 0.3;
+
+                gCustomData[i * 2] = Math.random() * Math.PI * 2;
+                gCustomData[i * 2 + 1] = 0.2 + Math.random() * 0.5;
+            }
+
+            goldGeometry.setAttribute('position', new THREE.BufferAttribute(gPositions, 3));
+            goldGeometry.setAttribute('color', new THREE.BufferAttribute(gColors, 3));
+            goldGeometry.setAttribute('customData', new THREE.BufferAttribute(gCustomData, 2));
+
+            const goldMaterial = new THREE.PointsMaterial({
+                size: 3.2,
+                map: goldTexture,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.85,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            goldDust = new THREE.Points(goldGeometry, goldMaterial);
+            scene.add(goldDust);
+
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+    </script>
+
+    <script>
+        let scrollVelocity = 0;
+        let smoothScrollVelocity = 0;
+
+        const cardsContainer = document.getElementById("cards-container");
+        const cardsArray = [];
+
+        for (let i = 0; i < CARD_COUNT; i++) {
+            const cardEl = document.createElement("div");
+            cardEl.className = "card absolute w-[130px] h-[180px] md:w-[165px] md:h-[230px] overflow-visible pointer-events-auto select-none";
+
+            cardEl.isDragged = false;
+            cardEl.offsetX = 0;
+            cardEl.offsetY = 0;
+            cardEl.glowFadeTween = null;
+
+            const meta = cardMetadata[i];
+
+            cardEl.innerHTML = `
+                <div class="card-inner absolute inset-0 rounded-[1.75rem] flex flex-col justify-between p-4 cursor-grab overflow-hidden">
+                    <div class="foil-shine absolute inset-0 z-10"></div>
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[#0c0512]/10 to-[#0c0512]/90 z-10 pointer-events-none"></div>
+
+                    <img src="${meta.img}" alt="Memory" class="absolute inset-0 w-full h-full object-cover z-0 transition-transform duration-700 filter brightness-[0.98] contrast-[1.01] pointer-events-none" onerror="this.style.opacity=0">
+
+                    <div class="flex justify-between items-center text-[7px] tracking-[0.2em] text-white/45 z-20 font-mono pointer-events-none">
+                        <span>[MOMENT]</span>
+                        <span>${String(i + 1).padStart(2, '0')}</span>
+                    </div>
+
+                    <div class="my-auto flex justify-center items-center z-20 opacity-15 hover:opacity-100 transition-opacity duration-300 transform scale-75 pointer-events-none">
+                        <svg class="w-6 h-6 text-[#dfb877]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.75">
+                            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="0.5" />
+                            <path d="M12 2c.8 3.5-2.2 4.5-3 5.5s-2.2 1-3 0 2.2-4.5 3-5.5S11.2 2 12 2zM12 22c-.8-3.5 2.2-4.5 3-5.5s2.2-1 3 0-2.2 4.5-3 5.5-3.2 0-3 0zM22 12c-3.5-.8-4.5 2.2-5.5 3s-1 2.2 0 3 4.5-2.2 5.5-3-2-3 0-3zM2 12c3.5.8 4.5-2.2 5.5-3s1-2.2 0-3-4.5 2.2-5.5 3 2 3 0 3z"/>
+                        </svg>
+                    </div>
+
+                    <div class="z-20 text-left border-t border-white/10 pt-2.5 pointer-events-none">
+                        <div class="text-[9px] md:text-[10.5px] font-bold text-white tracking-[0.08em] serif-font line-clamp-1">${meta.title}</div>
+                        <div class="w-full h-[1px] bg-[#d97d7a]/20 rounded-full mt-1 overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-[#d97d7a] to-[#dfb877]" style="width: ${35 + (i * 1.8) % 65}%"></div>
+                        </div>
+                        <div class="text-[6px] md:text-[6.5px] text-[#dfb877]/40 tracking-[0.2em] mt-1.5 font-mono uppercase">${meta.desc}</div>
+                    </div>
+                </div>
+            `;
+
+            const innerContainer = cardEl.querySelector('.card-inner');
+
+            let isDragging = false;
+            let startX = 0, startY = 0;
+            let startOffsetX = 0, startOffsetY = 0;
+
+            innerContainer.addEventListener('pointerdown', (e) => {
+                e.stopPropagation();
+                isDragging = true;
+                innerContainer.style.cursor = 'grabbing';
+
+                startX = e.clientX;
+                startY = e.clientY;
+                startOffsetX = cardEl.offsetX;
+                startOffsetY = cardEl.offsetY;
+
+                innerContainer.setPointerCapture(e.pointerId);
+            });
+
+            innerContainer.addEventListener('pointermove', (e) => {
+                if (isDragging) {
+                    const dx = e.clientX - startX;
+                    const dy = e.clientY - startY;
+
+                    cardEl.offsetX = startOffsetX + dx;
+                    cardEl.offsetY = startOffsetY + dy;
+                    cardEl.isDragged = true;
+
+                    gsap.set(innerContainer, {
+                        x: cardEl.offsetX,
+                        y: cardEl.offsetY,
+                        overwrite: "auto"
+                    });
+                } else {
+                    const rect = innerContainer.getBoundingClientRect();
+                    const x = e.clientX - rect.left - rect.width/2;
+                    const y = e.clientY - rect.top - rect.height/2;
+
+                    const normalizedX = x / (rect.width/2);
+                    const normalizedY = y / (rect.height/2);
+
+                    const floatX = 10 * normalizedX;
+                    const floatY = 10 * normalizedY - 12;
+
+                    gsap.to(innerContainer, {
+                        x: cardEl.offsetX + floatX,
+                        y: cardEl.offsetY + floatY,
+                        duration: 0.15,
+                        ease: "power1.out",
+                        overwrite: "auto",
+                        force3D: true
+                    });
+
+                    if (!document.body.classList.contains('force-shimmer')) {
+                        const shine = innerContainer.querySelector('.foil-shine');
+                        if (shine) {
+                            const pctX = ((x + rect.width/2) / rect.width) * 100;
+                            const pctY = ((y + rect.height/2) / rect.height) * 100;
+                            shine.style.background = `radial-gradient(circle at ${pctX}% ${pctY}%, rgba(255, 210, 210, 0.28) 0%, rgba(217, 125, 122, 0.15) 50%, transparent 80%)`;
+                        }
+                    }
+                }
+            });
+
+            innerContainer.addEventListener('pointerup', (e) => {
+                innerContainer.style.cursor = 'grab';
+                if (isDragging) {
+                    isDragging = false;
+                    innerContainer.releasePointerCapture(e.pointerId);
+                }
+
+                gsap.to(innerContainer, {
+                    x: cardEl.offsetX,
+                    y: cardEl.offsetY,
+                    scale: 1,
+                    duration: 1.4,
+                    ease: "elastic.out(1.2, 0.42)",
+                    overwrite: "auto"
+                });
+            });
+
+            innerContainer.addEventListener('pointercancel', (e) => {
+                innerContainer.style.cursor = 'grab';
+                isDragging = false;
+                innerContainer.releasePointerCapture(e.pointerId);
+            });
+
+            innerContainer.addEventListener("mouseenter", (e) => {
+                if (resetting) return;
+                if (cardEl.glowFadeTween) cardEl.glowFadeTween.kill();
+
+                const shine = innerContainer.querySelector('.foil-shine');
+
+                cardEl._baseZ = cardEl.style.zIndex;
+                cardEl.style.zIndex = 999;
+
+                gsap.to(innerContainer, {
+                    scale: 1.08,
+                    boxShadow: "0 20px 45px rgba(217, 125, 122, 0.4), inset 0 0 15px rgba(223, 184, 119, 0.25)",
+                    borderColor: "rgba(223, 184, 119, 0.8)",
+                    duration: 0.15,
+                    ease: "power2.out",
+                    overwrite: "auto",
+                    force3D: true
+                });
+                if (shine) {
+                    gsap.to(shine, { opacity: 1, duration: 0.15, overwrite: "auto" });
+                }
+
+                if (!document.body.classList.contains('force-shimmer')) {
+                    cardEl.glowFadeTween = gsap.timeline({ delay: 1.2 });
+
+                    cardEl.glowFadeTween.to(innerContainer, {
+                        boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+                        borderColor: "rgba(217, 125, 122, 0.16)",
+                        duration: 0.5,
+                        ease: "power1.out"
+                    }, 0);
+
+                    if (shine) {
+                        cardEl.glowFadeTween.to(shine, {
+                            opacity: 0,
+                            duration: 0.5,
+                            ease: "power1.out"
+                        }, 0);
+                    }
+                }
+            });
+
+            innerContainer.addEventListener("mouseleave", () => {
+                if (resetting) return;
+                if (cardEl.glowFadeTween) cardEl.glowFadeTween.kill();
+
+                if (cardEl._baseZ !== undefined) cardEl.style.zIndex = cardEl._baseZ;
+
+                gsap.to(innerContainer, {
+                    x: cardEl.offsetX,
+                    y: cardEl.offsetY,
+                    scale: 1,
+                    duration: 1.4,
+                    ease: "elastic.out(1.2, 0.42)",
+                    overwrite: "auto"
+                });
+
+                if (!document.body.classList.contains('force-shimmer')) {
+                    const shine = innerContainer.querySelector('.foil-shine');
+                    cardEl.glowFadeTween = gsap.timeline();
+
+                    cardEl.glowFadeTween.to(innerContainer, {
+                        boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+                        borderColor: "rgba(217, 125, 122, 0.16)",
+                        duration: 0.8,
+                        delay: 0.8,
+                        ease: "power2.out"
+                    }, 0);
+
+                    if (shine) {
+                        cardEl.glowFadeTween.to(shine, {
+                            opacity: 0,
+                            duration: 0.8,
+                            delay: 0.8,
+                            ease: "power2.out"
+                        }, 0);
+                    }
+                }
+            });
+
+            innerContainer.addEventListener("dblclick", (e) => {
+                e.stopPropagation();
+                openInspector(meta, i);
+            });
+
+            cardsContainer.appendChild(cardEl);
+            cardsArray.push(cardEl);
+
+            // 已移除撕拉片灰片层：所有照片始终清晰显示。双击卡片查看大图。
+            cardEl._revealed = true;
+            cardEl.addEventListener('dblclick', (e) => {
+                e.stopPropagation();
+                if (typeof openInspector === 'function') openInspector(meta, i);
+            });
+
+        }
+
+    </script>
+
+    <script>
+        const poemsLayer = document.getElementById("poems-layer");
+        const poemsEls = [];
+
+        poemsData.forEach((poem, idx) => {
+            const poemWrap = document.createElement("div");
+            poemWrap.id = `poem-wrap-${idx}`;
+            poemWrap.className = "poem-wrapper opacity-0 invisible select-none pointer-events-none absolute w-full max-w-4xl px-8 text-center";
+            poemWrap.style.top = poem.top;
+            poemWrap.style.left = poem.left || "50%";
+            poemWrap.style.transform = "translate(-50%, -50%)";
+
+            const lines = poem.text.split("/");
+            let innerHtml = '<div class="flex flex-col gap-4 md:gap-7 items-center w-full">';
+
+            lines.forEach((lineText, lineIdx) => {
+                const weightClass = lineIdx % 2 === 0 ? 'font-light italic text-white/95' : 'font-semibold tracking-[0.25em] text-[#dfb877]';
+                let lineSpanned = "";
+                Array.from(lineText).forEach((char) => {
+                    lineSpanned += `<span class="char-box transform translate-3d(0,0,0) opacity-0" style="display:inline-block">${char}</span>`;
+                });
+
+                innerHtml += `
+                    <div class="overflow-visible w-full text-center">
+                        <span class="poem-line text-xl sm:text-2xl md:text-3xl lg:text-4.5xl ${weightClass} serif-font filter drop-shadow-[0_4px_10px_rgba(12,5,18,0.95)]">
+                            ${lineSpanned}
+                        </span>
+                    </div>
+                `;
+            });
+            innerHtml += '</div>';
+
+            poemWrap.innerHTML = innerHtml;
+            poemsLayer.appendChild(poemWrap);
+            poemsEls.push(poemWrap);
+        });
+
+        function playSceneSynchronizedText(poemWrapper, style) {
+            const charBoxes = poemWrapper.querySelectorAll(".char-box");
+            gsap.killTweensOf(charBoxes);
+
+            switch (style) {
+                case "bounce":
+                    gsap.set(charBoxes, { y: -35, opacity: 0, filter: "blur(6px)" });
+                    gsap.to(charBoxes, {
+                        y: 0, opacity: 1, filter: "blur(0px)",
+                        duration: 0.9, ease: "bounce.out",
+                        stagger: 0.04
+                    });
+                    break;
+
+                case "cross":
+                    charBoxes.forEach((box, i) => {
+                        const offset = i % 2 === 0 ? -150 : 150;
+                        gsap.set(box, { x: offset, opacity: 0, filter: "blur(8px)" });
+                    });
+                    gsap.to(charBoxes, {
+                        x: 0, opacity: 1, filter: "blur(0px)",
+                        duration: 1.0, ease: "power2.out",
+                        stagger: 0.028
+                    });
+                    break;
+
+                case "implode":
+                    gsap.set(charBoxes, { scale: 1.8, opacity: 0, filter: "blur(12px)" });
+                    gsap.to(charBoxes, {
+                        scale: 1, opacity: 1, filter: "blur(0px)",
+                        duration: 1.1, ease: "power2.out",
+                        stagger: 0.05
+                    });
+                    break;
+
+                case "fan":
+                    gsap.set(charBoxes, { rotationY: -90, opacity: 0, filter: "blur(5px)" });
+                    gsap.to(charBoxes, {
+                        rotationY: 0, opacity: 1, filter: "blur(0px)",
+                        duration: 0.8, ease: "power2.out",
+                        stagger: 0.035
+                    });
+                    break;
+
+                case "wave":
+                    gsap.set(charBoxes, { opacity: 0, y: 12, filter: "blur(8px)" });
+                    gsap.to(charBoxes, {
+                        opacity: 1, y: 0, filter: "blur(0px)",
+                        duration: 1.2, ease: "power3.out",
+                        stagger: 0.06
+                    });
+                    break;
+
+                case "spiral":
+                    gsap.set(charBoxes, { rotationZ: -140, scale: 0.5, opacity: 0 });
+                    gsap.to(charBoxes, {
+                        rotationZ: 0, scale: 1, opacity: 1,
+                        duration: 1.0, ease: "power2.out",
+                        stagger: 0.03
+                    });
+                    break;
+
+                case "fall":
+                    gsap.set(charBoxes, { y: -50, opacity: 0, filter: "blur(4px)" });
+                    gsap.to(charBoxes, {
+                        y: 0, opacity: 1, filter: "blur(0px)",
+                        duration: 0.8, ease: "back.out(1.2)",
+                        stagger: 0.035
+                    });
+                    break;
+
+                case "grace-final":
+                    gsap.set(charBoxes, { opacity: 0, y: 15, filter: "blur(10px)", scale: 0.95 });
+                    gsap.to(charBoxes, {
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                        filter: "blur(0px)",
+                        duration: 1.3,
+                        ease: "power2.out",
+                        stagger: 0.08
+                    });
+                    break;
+            }
+        }
+    </script>
+
+    <script>
+        function getSceneCoords(sceneNum) {
+            const coords = [];
+            for (let i = 0; i < CARD_COUNT; i++) {
+                let x = "0vw", y = "0vh", rot = 0, scale = 1, opacity = 1, zIndex = i + 10;
+
+                const s1 = getSeed(i * 3);
+                const s2 = getSeed(i * 3 + 1);
+                const s3 = getSeed(i * 3 + 2);
+
+                switch (sceneNum) {
+                    case 1:
+                        const colsS1 = 7;
+                        const colS1 = i % colsS1;
+                        const rowS1 = Math.floor(i / colsS1);
+                        const rowsS1 = Math.ceil(CARD_COUNT / colsS1);
+                        x = `${(colS1 - (colsS1 - 1) / 2) * 13.5 + (s1 * 2.0 - 1.0)}vw`;
+                        y = `${(rowS1 - (rowsS1 - 1) / 2) * 15.5 + (s2 * 2.0 - 1.0)}vh`;
+                        rot = -10 + s3 * 20;
+                        scale = 0.72 + s1 * 0.12;
+                        opacity = 0.85 + s2 * 0.15;
+                        break;
+
+                    case 2:
+                        const isEven = (i % 2 === 0);
+                        if (isEven) {
+                            const hCount = Math.ceil(CARD_COUNT / 2);
+                            const hIndex = Math.floor(i / 2);
+                            const val = (hIndex / (hCount - 1)) - 0.5;
+                            x = `${val * 94}vw`;
+                            y = `0vh`;
+                            rot = 0;
+                            scale = 0.72;
+                            zIndex = 20;
+                        } else {
+                            const vCount = Math.floor(CARD_COUNT / 2);
+                            const vIndex = Math.floor((i - 1) / 2);
+                            const val = (vIndex / (vCount - 1)) - 0.5;
+                            x = `0vw`;
+                            y = `${val * 85}vh`;
+                            rot = 90;
+                            scale = 0.72;
+                            zIndex = 10;
+                        }
+                        opacity = 0.9;
+                        break;
+
+                    case 3:
+                        const radiusS3 = 5 + (i % 4) * 4.2;
+                        const angleS3 = (i / CARD_COUNT) * Math.PI * 2;
+                        x = `${radiusS3 * Math.cos(angleS3)}vw`;
+                        y = `${radiusS3 * Math.sin(angleS3) * 1.1}vh`;
+                        rot = (angleS3 * 180 / Math.PI) + 90;
+                        scale = 0.65;
+                        opacity = 0.9;
+                        zIndex = i + 10;
+                        break;
+
+                    case 4:
+                        const angleS4 = -65 + (i / (CARD_COUNT - 1)) * 130;
+                        const radS4 = angleS4 * Math.PI / 180;
+                        const radiusS4 = 28;
+                        x = `${radiusS4 * Math.sin(radS4)}vw`;
+                        y = `${radiusS4 * Math.cos(radS4) - 13}vh`;
+                        rot = angleS4;
+                        scale = 0.75;
+                        opacity = 0.92;
+                        zIndex = i + 10;
+                        break;
+
+                    case 5:
+                        const colS5 = i % 7;
+                        const rowS5 = Math.floor(i / 7);
+                        const rowsS5 = Math.ceil(CARD_COUNT / 7);
+                        x = `${(colS5 - 3.0) * 13}vw`;
+                        const waveOffset = Math.sin(colS5 + rowS5) * 5.5;
+                        y = `${(rowS5 - (rowsS5 - 1) / 2) * 13.8 + waveOffset}vh`;
+                        rot = Math.sin(colS5 - rowS5) * 5;
+                        scale = 0.7;
+                        opacity = 0.9;
+                        break;
+
+                    case 6:
+                        const turns = 2.0;
+                        const angleS6 = (i / CARD_COUNT) * Math.PI * 2 * turns;
+                        const spiralRadius = 2.0 + (i * 0.7);
+                        x = `${spiralRadius * Math.cos(angleS6)}vw`;
+                        y = `${spiralRadius * Math.sin(angleS6) * 0.85}vh`;
+                        rot = (angleS6 * 180 / Math.PI) + 45;
+                        scale = 0.52 + (i * 0.008);
+                        opacity = 0.88;
+                        zIndex = i + 10;
+                        break;
+
+                    case 7:
+                        const centerIdx = 8;
+                        if (i === centerIdx) {
+                            x = "0vw";
+                            y = "0vh";
+                            rot = 0;
+                            scale = 1.45;
+                            opacity = 1;
+                            zIndex = 500;
+                        } else {
+                            const orbIdx = i < centerIdx ? i : i - 1;
+                            const angleS7 = (orbIdx / (CARD_COUNT - 1)) * Math.PI * 2;
+                            x = `${Math.cos(angleS7) * 31}vw`;
+                            y = `${Math.sin(angleS7) * 20}vh`;
+                            rot = (angleS7 * 180 / Math.PI) + 90;
+                            scale = 0.52;
+                            opacity = 0.75;
+                            zIndex = Math.floor(Math.sin(angleS7) * 20) + 100;
+                        }
+                        break;
+
+                    case 8:
+                        const angleS8 = (i / CARD_COUNT) * Math.PI * 2 + (s1 * 0.25);
+                        const rW = 30 + s2 * 11;
+                        const rH = 22 + s3 * 9;
+                        x = `${Math.cos(angleS8) * rW}vw`;
+                        y = `${Math.sin(angleS8) * rH}vh`;
+                        rot = -25 + s1 * 50;
+                        scale = 0.6 + s2 * 0.2;
+                        opacity = 0.85;
+                        zIndex = Math.floor(s1 * 50) + 10;
+                        break;
+                }
+
+                scale = Math.max(scale, 0.5);
+                opacity = Math.max(opacity, 0.7);
+
+                coords.push({ x, y, rotation: rot, scale, opacity, zIndex });
+            }
+            return coords;
+        }
+
+        const masterTL = gsap.timeline({
+            scrollTrigger: {
+                trigger: "#scroll-track",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 1.2,
+                pin: "#viewport",
+                invalidateOnRefresh: true,
+                onUpdate: (self) => {
+                    const percent = Math.round(self.progress * 100);
+                    document.getElementById("scroll-percent").innerText = `${percent}%`;
+
+                    const ind = document.getElementById("scroll-indicator");
+                    if (percent > 0.5) {
+                        ind.style.opacity = "0";
+                    } else {
+                        ind.style.opacity = "1";
+                    }
+
+                    cardsArray.forEach((card) => {
+                        if (card.isDragged) {
+                            card.isDragged = false;
+                            const inner = card.querySelector('.card-inner');
+
+                            card.offsetX = 0;
+                            card.offsetY = 0;
+
+                            gsap.to(inner, {
+                                x: 0,
+                                y: 0,
+                                rotationX: 0,
+                                rotationY: 0,
+                                duration: 1.1,
+                                ease: "power3.out",
+                                overwrite: "auto"
+                            });
+                        }
+                    });
+
+                    scrollVelocity = Math.abs(self.getVelocity());
+
+                    const currentSceneIdx = Math.min(Math.floor(self.progress * SCENE_COUNT), SCENE_COUNT - 1);
+                    document.getElementById("scene-hud").innerText = `VALLEY: ${sceneNames[currentSceneIdx]}`;
+                }
+            }
+        });
+
+        cardsArray.forEach((card, i) => {
+            const side = i % 4;
+            let startX = 0, startY = 0;
+            if (side === 0) { startX = -150; startY = gsap.utils.random(-100, 100); }
+            else if (side === 1) { startX = 150; startY = gsap.utils.random(-100, 100); }
+            else if (side === 2) { startX = gsap.utils.random(-150, 150); startY = -120; }
+            else { startX = gsap.utils.random(-150, 150); startY = 120; }
+
+            gsap.set(card, {
+                x: `${startX}vw`,
+                y: `${startY}vh`,
+                rotation: gsap.utils.random(-120, 120),
+                scale: 0.15,
+                opacity: 0,
+                zIndex: i + 10
+            });
+        });
+
+        const sceneTargets = [];
+        for (let s = 1; s <= SCENE_COUNT; s++) {
+            sceneTargets.push(getSceneCoords(s));
+        }
+
+        cardsArray.forEach((card, i) => {
+            masterTL.to(card, {
+                x: sceneTargets[0][i].x,
+                y: sceneTargets[0][i].y,
+                rotation: sceneTargets[0][i].rotation,
+                scale: sceneTargets[0][i].scale,
+                opacity: sceneTargets[0][i].opacity,
+                zIndex: sceneTargets[0][i].zIndex,
+                duration: 10,
+                ease: "power2.out",
+                force3D: true
+            }, 0);
+
+            for (let s = 2; s <= SCENE_COUNT; s++) {
+                const startTime = (s - 1) * 10;
+                masterTL.to(card, {
+                    x: sceneTargets[s - 1][i].x,
+                    y: sceneTargets[s - 1][i].y,
+                    rotation: sceneTargets[s - 1][i].rotation,
+                    scale: sceneTargets[s - 1][i].scale,
+                    opacity: sceneTargets[s - 1][i].opacity,
+                    zIndex: sceneTargets[s - 1][i].zIndex,
+                    duration: 10,
+                    ease: "power1.inOut",
+                    force3D: true
+                }, startTime);
+            }
+        });
+
+        poemsEls.forEach((poemWrap, idx) => {
+            const startT = idx * 10;
+            const pData = poemsData[idx];
+            const style = pData.style;
+            const entryOffset = pData.entry || 4.0;
+            const exitOffset = pData.exit || 9.1;
+
+            masterTL.to(poemWrap, {
+                autoAlpha: 1,
+                duration: 1.0,
+                ease: "power2.out",
+                onStart: () => {
+                    playSceneSynchronizedText(poemWrap, style);
+                }
+            }, startT + entryOffset);
+
+            if (idx < SCENE_COUNT - 1) {
+                masterTL.to(poemWrap, {
+                    autoAlpha: 0,
+                    y: -15,
+                    duration: 0.8,
+                    ease: "power2.in"
+                }, startT + exitOffset);
+            }
+        });
+    </script>
+
+    <script>
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+
+        document.addEventListener("mousemove", (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+
+            const shiftX = (mouseX - window.innerWidth / 2) * 0.012;
+            const shiftY = (mouseY - window.innerHeight / 2) * 0.012;
+
+            gsap.to("#cards-parallax-wrapper", { x: shiftX, y: shiftY, duration: 1.5, ease: "power2.out" });
+        });
+
+        function renderWebGL() {
+            hearts.rotation.z += 0.00004;
+            hearts.rotation.y += 0.00001;
+
+            goldDust.rotation.z -= 0.00003;
+            goldDust.rotation.y += 0.00002;
+
+            const targetWarpVelocity = scrollVelocity * 0.00015;
+            smoothScrollVelocity += (targetWarpVelocity - smoothScrollVelocity) * 0.08;
+
+            const hPosAttribute = heartGeometry.getAttribute('position');
+            const hCustomAttribute = heartGeometry.getAttribute('customData');
+            const hPosArray = hPosAttribute.array;
+            const hCustomArray = hCustomAttribute.array;
+            const hLength = hPosArray.length;
+
+            const time = Date.now() * 0.0004;
+
+            for (let i = 0; i < hLength; i += 3) {
+                const index = i / 3;
+                const offsetPhase = hCustomArray[index * 2];
+                const speedFactor = hCustomArray[index * 2 + 1];
+
+                hPosArray[i + 2] += (smoothScrollVelocity * 4.5) + (0.007 * speedFactor);
+
+                hPosArray[i] += Math.sin(time + offsetPhase) * 0.007;
+                hPosArray[i + 1] += Math.cos(time * 0.8 + offsetPhase) * 0.006;
+
+                if (hPosArray[i + 2] > 400) {
+                    hPosArray[i + 2] = -400;
+                    hPosArray[i] = (Math.random() - 0.5) * 220;
+                    hPosArray[i + 1] = (Math.random() - 0.5) * 220;
+                }
+            }
+            hPosAttribute.needsUpdate = true;
+
+            const gPosAttribute = goldGeometry.getAttribute('position');
+            const gCustomAttribute = goldGeometry.getAttribute('customData');
+            const gPosArray = gPosAttribute.array;
+            const gCustomArray = gCustomAttribute.array;
+            const gLength = gPosArray.length;
+
+            for (let i = 0; i < gLength; i += 3) {
+                const index = i / 3;
+                const offsetPhase = gCustomArray[index * 2];
+                const speedFactor = gCustomArray[index * 2 + 1];
+
+                gPosArray[i + 2] += (smoothScrollVelocity * 3.5) + (0.008 * speedFactor);
+                gPosArray[i] += Math.cos(time + offsetPhase) * 0.008;
+                gPosArray[i + 1] += Math.sin(time * 0.5 + offsetPhase) * 0.008;
+
+                if (gPosArray[i + 2] > 400) {
+                    gPosArray[i + 2] = -400;
+                    gPosArray[i] = (Math.random() - 0.5) * 220;
+                    gPosArray[i + 1] = (Math.random() - 0.5) * 220;
+                }
+            }
+            gPosAttribute.needsUpdate = true;
+
+            renderer.render(scene, camera);
+            requestAnimationFrame(renderWebGL);
+        }
+
+        function openInspector(meta, index) {
+            document.getElementById("inspect-img").src = meta.img;
+            document.getElementById("inspect-title").innerText = meta.title;
+            document.getElementById("inspect-lore").innerText = meta.lore;
+
+            const modal = document.getElementById("inspector-modal");
+            modal.classList.remove("opacity-0", "pointer-events-none");
+            modal.classList.add("pointer-events-auto");
+            modal.querySelector(".glass-panel").classList.remove("translate-y-8");
+        }
+
+        function closeInspector() {
+            const modal = document.getElementById("inspector-modal");
+            modal.classList.add("opacity-0", "pointer-events-none");
+            modal.classList.remove("pointer-events-auto");
+            modal.querySelector(".glass-panel").classList.add("translate-y-8");
+            closeLightbox();
+        }
+
+        function openLightbox() {
+            const src = document.getElementById("inspect-img").src;
+            document.getElementById("lightbox-img").src = src;
+            const modal = document.getElementById("lightbox-modal");
+            modal.classList.remove("opacity-0", "pointer-events-none");
+            modal.classList.add("pointer-events-auto");
+            setTimeout(() => {
+                document.getElementById("lightbox-img").classList.remove("scale-90");
+                document.getElementById("lightbox-img").classList.add("scale-100");
+            }, 50);
+        }
+
+        function closeLightbox() {
+            const modal = document.getElementById("lightbox-modal");
+            document.getElementById("lightbox-img").classList.remove("scale-100");
+            document.getElementById("lightbox-img").classList.add("scale-90");
+            modal.classList.add("opacity-0", "pointer-events-none");
+            modal.classList.remove("pointer-events-auto");
+        }
+
+        window.onload = function() {
+            initWebGL();
+            renderWebGL();
+
+            setTimeout(() => {
+                ScrollTrigger.refresh();
+            }, 300);
+
+            // ===== 播放控制：自动滚动 + 背景音乐 =====
+            const bgm = document.getElementById("bgm");
+            const autoplayBtn = document.getElementById("autoplay-btn");
+            const autoplayIcon = document.getElementById("autoplay-icon");
+            const autoplayLabel = document.getElementById("autoplay-label");
+
+            let autoScrolling = false;
+            let autoScrollRAF = null;
+            const TOTAL_SECONDS = 100; // 整段约 100 秒滚完（比 120 秒再快一点）
+            const maxScrollY = () => document.documentElement.scrollHeight - window.innerHeight;
+            const scrollSpeed = () => maxScrollY() / (TOTAL_SECONDS * 60); // 约 60fps 下的每帧位移
+
+            function autoScrollStep() {
+                if (!autoScrolling) return;
+                const next = window.scrollY + scrollSpeed();
+                if (next >= maxScrollY()) {
+                    window.scrollTo(0, maxScrollY());
+                    endAutoScroll(); // 滚到末尾：停滚动，但音乐继续循环
+                    return;
+                }
+                window.scrollTo(0, next);
+                autoScrollRAF = requestAnimationFrame(autoScrollStep);
+            }
+
+            function startAutoScroll() {
+                if (autoScrolling) return;
+                autoScrolling = true;
+                bgm.play().catch(() => {});
+                autoScrollRAF = requestAnimationFrame(autoScrollStep);
+                autoplayIcon.innerHTML = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"></path>';
+                autoplayLabel.textContent = "暂停 · PAUSE";
+                const ind = document.getElementById("scroll-indicator");
+                if (ind) ind.style.opacity = "0";
+            }
+
+            function pauseAutoScroll() { // 按钮再次点击：停滚动并停音乐
+                autoScrolling = false;
+                if (autoScrollRAF) cancelAnimationFrame(autoScrollRAF);
+                bgm.pause();
+                autoplayIcon.innerHTML = '<path d="M8 5v14l11-7z"></path>';
+                autoplayLabel.textContent = "播放回忆 · PLAY";
+            }
+
+            function endAutoScroll() { // 滚到末尾：停滚动、保留音乐
+                autoScrolling = false;
+                if (autoScrollRAF) cancelAnimationFrame(autoScrollRAF);
+                autoplayIcon.innerHTML = '<path d="M8 5v14l11-7z"></path>';
+                autoplayLabel.textContent = "播放回忆 · PLAY";
+            }
+
+            autoplayBtn.addEventListener("click", () => {
+                if (autoScrolling) pauseAutoScroll();
+                else startAutoScroll();
+            });
+
+            // ===== 一键回到 0%（圆圈箭头）=====
+            const resetBtn = document.getElementById("reset-btn");
+            const resetIcon = document.getElementById("reset-icon");
+            resetBtn.addEventListener("click", () => {
+                // 1. 若在自动播放，先停掉，避免 RAF 又把进度推下去
+                if (autoScrolling) endAutoScroll();
+
+                // 2. 抑制 hover、清理残留 tween，让内层卡片立即归位，避免与回放重排打架闪烁
+                resetting = true;
+                cardsArray.forEach((card) => {
+                    if (card.glowFadeTween) card.glowFadeTween.kill();
+                    if (card._baseZ !== undefined) card.style.zIndex = card._baseZ;
+                    const inner = card.querySelector(".card-inner");
+                    if (inner) {
+                        gsap.killTweensOf(inner);
+                        gsap.set(inner, {
+                            scale: 1, x: 0, y: 0,
+                            boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+                            borderColor: "rgba(217, 125, 122, 0.16)"
+                        });
+                    }
+                    const shine = card.querySelector(".foil-shine");
+                    if (shine) gsap.set(shine, { opacity: 0 });
+                });
+
+                // 3. 平滑回顶（避免瞬间 scrollTo 触发的 pin 重排闪烁）
+                if (typeof ScrollToPlugin !== "undefined") {
+                    gsap.to(window, {
+                        scrollTo: { y: 0, autoKill: false },
+                        duration: 1.0,
+                        ease: "power2.inOut",
+                        onComplete: () => { resetting = false; }
+                    });
+                } else {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                    setTimeout(() => { resetting = false; }, 1000);
+                }
+
+                // 4. 按钮旋转反馈
+                resetIcon.classList.remove("spin-once");
+                void resetIcon.offsetWidth; // 触发重排以重启动画
+                resetIcon.classList.add("spin-once");
+            });
+
+            // 手动滚动接管：滚轮/触摸/方向键/空格/PageUp·Down 触发时停止自动滚动，但音乐继续
+            function manualTakeover() {
+                if (autoScrolling) endAutoScroll();
+            }
+            ["wheel", "touchmove", "keydown"].forEach(evt =>
+                window.addEventListener(evt, manualTakeover, { passive: true })
+            );
+
+            // ===== 音量开关（PLAY / MUTE）=====
+            const volumeBtn = document.getElementById("volume-btn");
+            const volumeIcon = document.getElementById("volume-icon");
+            const volumeLabel = document.getElementById("volume-label");
+            let muted = false;
+            function applyVolume() {
+                if (muted) {
+                    bgm.muted = true;
+                    volumeIcon.innerHTML = '<path d="M3 9v6h4l5 5V4L7 9H3z"></path><path d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>';
+                    volumeLabel.textContent = "MUTE";
+                } else {
+                    bgm.muted = false;
+                    volumeIcon.innerHTML = '<path d="M3 9v6h4l5 5V4L7 9H3z"></path><path d="M16 8a5 5 0 0 1 0 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>';
+                    volumeLabel.textContent = "PLAY";
+                }
+            }
+            applyVolume();
+            volumeBtn.addEventListener("click", () => {
+                muted = !muted;
+                applyVolume();
+            });
+        };
+    </script>
+</body>
+</html>

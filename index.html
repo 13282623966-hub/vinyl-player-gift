@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>To 仲夏夜</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=Inter:wght@300;400&family=IBM+Plex+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css?v=36" />
+  <style>
+    .top-nav {
+      position: fixed; top: 28px; right: 16px; z-index: 9999;
+      display: flex; gap: 10px;
+    }
+    .nav-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 8px 18px;
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 400;
+      letter-spacing: 0.06em; text-decoration: none;
+      color: rgba(255,255,255,0.85);
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 6px; cursor: pointer;
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      transition: background 0.25s, border-color 0.25s, color 0.25s;
+      user-select: none;
+    }
+    .nav-btn:hover {
+      background: rgba(255,255,255,0.16);
+      border-color: rgba(255,255,255,0.35); color: #fff;
+    }
+    .nav-btn.active {
+      background: rgba(255,255,255,0.22);
+      border-color: rgba(255,255,255,0.5); color: #fff;
+    }
+    .nav-btn--end {
+      border-color: rgba(255,180,160,0.3);
+      color: rgba(255,200,180,0.9);
+    }
+    .nav-btn--end:hover {
+      background: rgba(255,160,130,0.18);
+      border-color: rgba(255,160,130,0.5); color: #ffc8b0;
+    }
+    .nav-btn--end.active {
+      background: rgba(255,160,130,0.28);
+      border-color: rgba(255,160,130,0.6); color: #ffc8b0;
+    }
+    /* tab 面板 */
+    .tab-panel {
+      display: none;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+    .tab-iframe {
+      width: 100%; height: 100%; border: none; display: block;
+    }
+  </style>
+</head>
+<body>
+  <nav class="top-nav">
+    <button class="nav-btn active" data-tab="album" type="button">Album</button>
+    <button class="nav-btn" data-tab="memory" type="button">Memory</button>
+    <button class="nav-btn nav-btn--end" data-tab="end" type="button">End</button>
+  </nav>
+
+  <!-- Album 面板 -->
+  <div class="tab-panel active" id="panel-album">
+  <div class="foliowall-container">
+    <!-- ===== LEFT INFO PANEL ===== -->
+    <div class="info-panel">
+      <h1 class="title">To 仲夏夜</h1>
+      <p class="description">
+        A birthday gift.<br>
+        For the one who hears music in the spaces between stars —<br>
+        each cover here a tiny stage for a memory.<br><br>
+        May these songs travel lightly through your days,<br>
+        like pages turned by a gentle summer breeze.<br>
+        From past lives to new dawns,<br>
+        the record keeps turning — and we, likewise, said goodbye.
+      </p>
+      <div class="view-switcher">
+        <button class="view-btn active" data-view="wall">
+          <span class="btn-indicator"></span>WALL VIEW
+        </button>
+        <button class="view-btn" data-view="orbit">
+          <span class="btn-indicator"></span>ORBIT VIEW
+        </button>
+        <button class="view-btn" data-view="gallery">
+          <span class="btn-indicator"></span>GALLERY VIEW
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== RIGHT 3D SCENE ===== -->
+    <div class="scene-container" id="scene-container">
+      <!-- Wall View -->
+      <div class="wall-scene active" id="wall-scene">
+        <div class="wall-track" id="wall-track"></div>
+      </div>
+      <!-- Orbit View -->
+      <div class="orbit-scene" id="orbit-scene">
+        <div class="orbit-sphere" id="orbit-sphere">
+          <div class="orbit-glow"></div>
+        </div>
+      </div>
+      <!-- Gallery View -->
+      <div class="gallery-scene" id="gallery-scene">
+        <div class="gallery-grid" id="gallery-grid"></div>
+      </div>
+    </div>
+
+    <!-- ===== DETAIL PANEL ===== -->
+    <div class="detail-panel" id="detail-panel">
+      <span class="detail-date" id="detail-date">FEBRUARY 21, 1925</span>
+      <p class="detail-desc" id="detail-desc">
+        A public-domain cover from the golden age of print.
+      </p>
+    </div>
+
+    <!-- ===== PLAYER VIEW ===== -->
+    <div class="player-view" id="player-view">
+      <div class="player-bg"></div>
+      <button class="back-btn" id="back-btn" aria-label="Back">
+        <span class="back-arrow"></span>
+      </button>
+      <div class="player-info">
+        <div class="track-title" id="track-title"></div>
+        <div class="track-artist" id="track-artist"></div>
+        <div class="track-meta" id="track-meta"></div>
+      </div>
+      <div class="player-stage">
+        <div class="vinyl-wrapper" id="vinyl-wrapper">
+          <div class="vinyl" id="vinyl">
+            <div class="vinyl-grooves"></div>
+            <div class="vinyl-highlight"></div>
+            <div class="vinyl-label" id="vinyl-label">
+              <img class="vinyl-label-img" id="vinyl-label-img" alt="" />
+            </div>
+            <div class="vinyl-spindle"></div>
+          </div>
+        </div>
+        <div class="tonearm-wrapper" id="tonearm-wrapper">
+          <svg class="tonearm" viewBox="0 0 120 260" xmlns="http://www.w3.org/2000/svg">
+            <g class="tonearm-group">
+              <circle cx="60" cy="28" r="10" fill="#1a1a1a" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+              <circle cx="60" cy="28" r="3" fill="#0a0a0a"/>
+              <rect x="35" y="24" width="50" height="6" rx="3" fill="#2a2a2a"/>
+              <line x1="56" y1="30" x2="28" y2="238" stroke="rgba(255,255,255,0.18)" stroke-width="2.5" stroke-linecap="round"/>
+              <rect x="16" y="232" width="24" height="8" rx="2" fill="#2a2a2a" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>
+              <circle cx="28" cy="248" r="1.5" fill="rgba(255,255,255,0.5)"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <div class="stylus-hint" id="stylus-hint">Tap the record to play</div>
+      <div class="progress-area">
+        <span class="time" id="time-current">0:00</span>
+        <div class="progress-bar" id="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <span class="time" id="time-total">0:00</span>
+      </div>
+      <audio id="audio" preload="auto"></audio>
+    </div>
+
+    <!-- ===== LOADER ===== -->
+    <div class="loader" id="loader">
+      <div class="loader-ring"></div>
+      <span class="loader-text">LOADING</span>
+    </div>
+  </div>
+  </div><!-- /panel-album -->
+
+  <!-- Memory 面板 -->
+  <div class="tab-panel" id="panel-memory">
+    <iframe class="tab-iframe" src="./index-zxy.html?v=9" allowfullscreen></iframe>
+  </div>
+
+  <!-- End 面板 -->
+  <div class="tab-panel" id="panel-end">
+    <iframe class="tab-iframe" src="./tear-final.html" allowfullscreen></iframe>
+  </div>
+
+  <script>
+    (function() {
+      var btns = document.querySelectorAll('.nav-btn[data-tab]');
+      var panels = {
+        album: document.getElementById('panel-album'),
+        memory: document.getElementById('panel-memory'),
+        end: document.getElementById('panel-end')
+      };
+      btns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var tab = this.getAttribute('data-tab');
+          // 切换按钮 active
+          btns.forEach(function(b) { b.classList.remove('active'); });
+          this.classList.add('active');
+          // 切换面板
+          Object.keys(panels).forEach(function(k) { panels[k].classList.remove('active'); });
+          if (panels[tab]) panels[tab].classList.add('active');
+        });
+      });
+    })();
+  </script>
+  <script src="./app.js?v=35"></script>
+</body>
+</html>
