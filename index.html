@@ -4,9 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>To 仲夏夜</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&family=Inter:wght@300;400&family=IBM+Plex+Mono&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./style.css?v=36" />
   <style>
     .top-nav {
@@ -174,14 +171,14 @@
   </div>
   </div><!-- /panel-album -->
 
-  <!-- Memory 面板 -->
+  <!-- Memory 面板（懒加载：首次点击 Memory 才加载） -->
   <div class="tab-panel" id="panel-memory">
-    <iframe class="tab-iframe" src="./index-zxy.html?v=9" allowfullscreen></iframe>
+    <iframe class="tab-iframe" data-src="./index-zxy.html?v=9" allowfullscreen></iframe>
   </div>
 
-  <!-- End 面板 -->
+  <!-- End 面板（懒加载：首次点击 End 才加载） -->
   <div class="tab-panel" id="panel-end">
-    <iframe class="tab-iframe" src="./tear-final.html" allowfullscreen></iframe>
+    <iframe class="tab-iframe" data-src="./tear-final.html" allowfullscreen></iframe>
   </div>
 
   <script>
@@ -192,15 +189,28 @@
         memory: document.getElementById('panel-memory'),
         end: document.getElementById('panel-end')
       };
+      var iframes = {
+        memory: panels.memory.querySelector('iframe'),
+        end: panels.end.querySelector('iframe')
+      };
+      // 面板切换：激活对应面板；首次激活的 iframe 才加载 src；并通知子页面暂停/恢复 3D 渲染
+      function switchTab(tab) {
+        btns.forEach(function(b) { b.classList.remove('active'); });
+        btns.forEach(function(b) { if (b.getAttribute('data-tab') === tab) b.classList.add('active'); });
+        Object.keys(panels).forEach(function(k) { panels[k].classList.remove('active'); });
+        if (panels[tab]) panels[tab].classList.add('active');
+        var f = iframes[tab];
+        if (f && !f.getAttribute('src')) f.setAttribute('src', f.getAttribute('data-src'));
+        Object.keys(iframes).forEach(function(k) {
+          var i = iframes[k];
+          if (i && i.contentWindow) {
+            try { i.contentWindow.postMessage({ type: 'tab-pause', paused: k !== tab }, '*'); } catch (e) {}
+          }
+        });
+      }
       btns.forEach(function(btn) {
         btn.addEventListener('click', function() {
-          var tab = this.getAttribute('data-tab');
-          // 切换按钮 active
-          btns.forEach(function(b) { b.classList.remove('active'); });
-          this.classList.add('active');
-          // 切换面板
-          Object.keys(panels).forEach(function(k) { panels[k].classList.remove('active'); });
-          if (panels[tab]) panels[tab].classList.add('active');
+          switchTab(this.getAttribute('data-tab'));
         });
       });
     })();

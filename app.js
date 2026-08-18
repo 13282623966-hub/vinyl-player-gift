@@ -12,6 +12,8 @@ const state = {
   // Wall View
   wallCards: [],              // DOM elements on track
   wallDataIdx: [],            // data index for each slot
+  wallCardX: [],              // cached x position (px) per card — avoids regex parsing
+  wallBlur: [],               // cached blur value per card — avoids filter repaints
   wallScroll: 0,              // track translateX offset (px)
   wallVelocity: 0,            // px/s
   wallDragging: false,
@@ -160,8 +162,14 @@ function updateWallPositions() {
 
     state.wallCards[i].style.transform =
       `translate3d(${rawX}px, ${cardY}px, ${z}px)`;
-    state.wallCards[i].style.filter =
-      `blur(${blur.toFixed(1)}px)`;
+    // Cache x so updateFocus doesn't need to regex-parse transform each frame
+    state.wallCardX[i] = rawX;
+    // Only touch filter when blur changed noticeably (0.5px) to avoid filter repaints
+    const prevBlur = state.wallBlur[i] || 0;
+    if (Math.abs(blur - prevBlur) >= 0.5) {
+      state.wallCards[i].style.filter = `blur(${blur.toFixed(1)}px)`;
+      state.wallBlur[i] = blur;
+    }
     state.wallCards[i].style.opacity = opacity.toFixed(2);
   }
 
@@ -177,8 +185,7 @@ function updateFocus() {
 
   for (let i = 0; i < state.wallCards.length; i++) {
     const card = state.wallCards[i];
-    const t3d = card.style.transform.match(/translate3d\(([^,]+)/);
-    const cx = t3d ? parseFloat(t3d[1]) : 0;
+    const cx = state.wallCardX[i] || 0;
     const d = Math.abs(cx - focusX);
     if (d < bestDist) { bestDist = d; bestI = i; }
     card.classList.toggle("highlight", false);
@@ -203,10 +210,10 @@ function snapToFocus(dataIdx) {
   const sw = scene ? scene.clientWidth : window.innerWidth;
   const focusX = sw * FOCUS_RATIO;
   let targetCard = null, bestDist = Infinity;
-  for (const card of state.wallCards) {
+  for (let i = 0; i < state.wallCards.length; i++) {
+    const card = state.wallCards[i];
     if (parseInt(card.dataset.dataIdx) !== dataIdx) continue;
-    const t3d = card.style.transform.match(/translate3d\(([^,]+)/);
-    const cx = t3d ? parseFloat(t3d[1]) : 0;
+    const cx = state.wallCardX[i] || 0;
     const d = Math.abs(cx - focusX);
     if (d < bestDist) { bestDist = d; targetCard = card; }
   }

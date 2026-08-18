@@ -4,16 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>For 张馨尹 · Eternal Blossoms</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Elegant Fonts for High-End Typography -->
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,500;1,300&family=Noto+Serif+SC:wght@200;300;400;600&display=swap" rel="stylesheet">
-    <!-- GSAP & ScrollTrigger -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
-    <!-- Three.js for Premium Floating 3D Heart Particle System -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Tailwind CSS (本地化) -->
+    <script src="./assets/js/tailwind.js"></script>
+    <!-- GSAP & ScrollTrigger (本地化) -->
+    <script src="./assets/js/gsap.min.js"></script>
+    <script src="./assets/js/ScrollTrigger.min.js"></script>
+    <script src="./assets/js/ScrollToPlugin.min.js"></script>
+    <!-- Three.js for Premium Floating 3D Heart Particle System (本地化) -->
+<script src="./assets/js/three.min.js"></script>
 
     <style>
         body {
@@ -119,7 +117,7 @@
     <body class="text-white select-none overflow-y-auto">
 
     <!-- 背景音乐：单击播放按钮自动启动并与滚动同步；手动滚轮接管时音乐继续播放 -->
-    <audio id="bgm" src="bgm.mp3" loop preload="auto"></audio>
+    <audio id="bgm" src="bgm.mp3" loop preload="metadata"></audio>
 
     <!-- Outer scroll track (holds total scroll length of 2000vh: 8 scenes * 250vh) -->
     <div id="scroll-track" class="relative w-full h-[2000vh] bg-[#0c0512]">
@@ -1139,7 +1137,11 @@
             gsap.to("#cards-parallax-wrapper", { x: shiftX, y: shiftY, duration: 1.5, ease: "power2.out" });
         });
 
+        var webglPaused = false; // 顶层全局：面板不可见/后台时暂停 3D 渲染
+
         function renderWebGL() {
+            // 面板不可见或页面切后台时暂停渲染（空转 RAF，GPU 零开销）
+            if (webglPaused) { requestAnimationFrame(renderWebGL); return; }
             hearts.rotation.z += 0.00004;
             hearts.rotation.y += 0.00001;
 
@@ -1242,8 +1244,24 @@
         }
 
         window.onload = function() {
-            initWebGL();
-            renderWebGL();
+            // ===== WebGL 降级 + 渲染暂停控制 =====
+            webglPaused = false;
+            try {
+                initWebGL();
+                renderWebGL();
+            } catch (e) {
+                // WebGL 初始化失败（如老设备/无 GPU）：显示降级提示，不影响页面其他内容
+                var wc = document.getElementById("webgl-container");
+                if (wc) {
+                    wc.innerHTML = '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:rgba(255,255,255,.5);font-size:14px;letter-spacing:.15em;line-height:2">你的设备暂不支持 3D 粒子效果<br>但以下回忆照片不受影响 ✦</div>';
+                }
+            }
+            window.addEventListener("message", function (e) {
+                if (e.data && e.data.type === "tab-pause") webglPaused = !!e.data.paused;
+            });
+            document.addEventListener("visibilitychange", function () {
+                webglPaused = document.hidden;
+            });
 
             setTimeout(() => {
                 ScrollTrigger.refresh();
@@ -1276,7 +1294,10 @@
             function startAutoScroll() {
                 if (autoScrolling) return;
                 autoScrolling = true;
-                bgm.play().catch(() => {});
+                bgm.play().catch(() => {
+                    // 移动端自动播放被拦截：给用户一个明确提示
+                    if (autoplayLabel) autoplayLabel.textContent = "点击开启声音 · TAP TO PLAY";
+                });
                 autoScrollRAF = requestAnimationFrame(autoScrollStep);
                 autoplayIcon.innerHTML = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"></path>';
                 autoplayLabel.textContent = "暂停 · PAUSE";

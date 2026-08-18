@@ -8,7 +8,10 @@
     "image": "./assets/covers/past-life.jpg",
     "audio": "./assets/audio/past-life.mp3",
     "artist": "Ariana Grande",
-    "color_palette": ["#b39ddb", "#f5f0eb"],
+    "color_palette": [
+      "#b39ddb",
+      "#f5f0eb"
+    ],
     "themeColor": "#b39ddb",
     "year": "2019"
   },
@@ -21,7 +24,10 @@
     "image": "./assets/covers/born-to-be-alive.jpg",
     "audio": "./assets/audio/born-to-be-alive.mp3",
     "artist": "eN Band",
-    "color_palette": ["#f4a460", "#2a1a0a"],
+    "color_palette": [
+      "#f4a460",
+      "#2a1a0a"
+    ],
     "themeColor": "#f4a460",
     "year": "—"
   },
@@ -34,7 +40,10 @@
     "image": "./assets/covers/cardigan.jpg",
     "audio": "./assets/audio/cardigan.mp3",
     "artist": "Taylor Swift",
-    "color_palette": ["#8fbc8f", "#e8e8e0"],
+    "color_palette": [
+      "#8fbc8f",
+      "#e8e8e0"
+    ],
     "themeColor": "#8fbc8f",
     "year": "2020"
   },
@@ -47,7 +56,10 @@
     "image": "./assets/covers/hate-that-i-made-you.jpg",
     "audio": "./assets/audio/hate-that-i-made-you.mp3",
     "artist": "Ariana Grande",
-    "color_palette": ["#cd5c5c", "#faf0f0"],
+    "color_palette": [
+      "#cd5c5c",
+      "#faf0f0"
+    ],
     "themeColor": "#cd5c5c",
     "year": "—"
   },
@@ -60,7 +72,10 @@
     "image": "./assets/covers/honeymoon-avenue.jpg",
     "audio": "./assets/audio/honeymoon-avenue.mp3",
     "artist": "Ariana Grande",
-    "color_palette": ["#ffb6c1", "#4a2020"],
+    "color_palette": [
+      "#ffb6c1",
+      "#4a2020"
+    ],
     "themeColor": "#ffb6c1",
     "year": "2013"
   },
@@ -73,7 +88,10 @@
     "image": "./assets/covers/long-live.jpg",
     "audio": "./assets/audio/long-live.mp3",
     "artist": "Taylor Swift",
-    "color_palette": ["#ffd700", "#0a0a2e"],
+    "color_palette": [
+      "#ffd700",
+      "#0a0a2e"
+    ],
     "themeColor": "#ffd700",
     "year": "2010"
   },
@@ -86,7 +104,10 @@
     "image": "./assets/covers/thank-u-next.jpg",
     "audio": "./assets/audio/thank-u-next.mp3",
     "artist": "Ariana Grande",
-    "color_palette": ["#dda0dd", "#fff0f5"],
+    "color_palette": [
+      "#dda0dd",
+      "#fff0f5"
+    ],
     "themeColor": "#dda0dd",
     "year": "2019"
   },
@@ -99,7 +120,10 @@
     "image": "./assets/covers/guang-bo.jpg",
     "audio": "./assets/audio/guang-bo.mp3",
     "artist": "单依纯",
-    "color_palette": ["#87ceeb", "#0a1a2a"],
+    "color_palette": [
+      "#87ceeb",
+      "#0a1a2a"
+    ],
     "themeColor": "#87ceeb",
     "year": "—"
   },
@@ -112,7 +136,10 @@
     "image": "./assets/covers/zhu-yu.jpg",
     "audio": "./assets/audio/zhu-yu.mp3",
     "artist": "单依纯",
-    "color_palette": ["#e6e6fa", "#1a1a2e"],
+    "color_palette": [
+      "#e6e6fa",
+      "#1a1a2e"
+    ],
     "themeColor": "#e6e6fa",
     "year": "—"
   },
@@ -125,7 +152,10 @@
     "image": "./assets/covers/hong-se-gao-gen-xie.jpg",
     "audio": "./assets/audio/hong-se-gao-gen-xie.mp3",
     "artist": "蔡健雅",
-    "color_palette": ["#dc143c", "#1a0000"],
+    "color_palette": [
+      "#dc143c",
+      "#1a0000"
+    ],
     "themeColor": "#dc143c",
     "year": "2009"
   },
@@ -135,10 +165,13 @@
     "subtitle": "单依纯",
     "date": "JUNE 18, 2025",
     "description": "A dual-track suite blending misheard-lyric whimsy with a tender floral motif, showcasing vocal agility.",
-    "image": "./assets/covers/空耳+还你茉莉.jpg",
-    "audio": "./assets/audio/空耳+还你茉莉.mp3",
+    "image": "./assets/covers/konger-huanni-moli.jpg",
+    "audio": "./assets/audio/konger-huanni-moli.mp3",
     "artist": "单依纯",
-    "color_palette": ["#eec6d6", "#1a1a10"],
+    "color_palette": [
+      "#eec6d6",
+      "#1a1a10"
+    ],
     "themeColor": "#eec6d6",
     "year": "—"
   }
