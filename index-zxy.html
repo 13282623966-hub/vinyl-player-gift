@@ -48,7 +48,8 @@
         /* Outer Card Wrapper (Strictly Scroll-Driven by GSAP) */
         .card {
             transform: translateZ(0);
-            touch-action: none;
+            /* 允许垂直滚动：页面动画由 2000vh 滚动驱动，手机上必须能上下滑动 */
+            touch-action: pan-y;
         }
 
         /* Inner Interactive Container (Strictly Hover, Drag, & Rotate-Driven) */
@@ -134,7 +135,7 @@
 
             <!-- Global Parallax Container for interactive cards -->
             <div id="cards-parallax-wrapper" class="absolute inset-0 w-full h-full z-20 pointer-events-none">
-                <div id="cards-container" class="w-full h-full flex items-center justify-center overflow-hidden pointer-events-auto" style="touch-action: none;">
+                <div id="cards-container" class="w-full h-full flex items-center justify-center overflow-hidden pointer-events-auto" style="touch-action: pan-y;">
                     <!-- 28 Cards spawned dynamically -->
                 </div>
             </div>
@@ -1319,10 +1320,16 @@
             function startAutoScroll() {
                 if (autoScrolling) return;
                 autoScrolling = true;
-                bgm.play().catch(() => {
-                    // 移动端自动播放被拦截：给用户一个明确提示
-                    if (autoplayLabel) autoplayLabel.textContent = "点击开启声音 · TAP TO PLAY";
-                });
+                const pr = bgm.play();
+                if (pr && typeof pr.catch === "function") {
+                    pr.catch(() => {
+                        // 移动端自动播放被拦截：恢复可重试状态并提示用户点击开启声音
+                        autoScrolling = false;
+                        if (autoScrollRAF) cancelAnimationFrame(autoScrollRAF);
+                        autoplayIcon.innerHTML = '<path d="M8 5v14l11-7z"></path>';
+                        if (autoplayLabel) autoplayLabel.textContent = "点击开启声音 · TAP TO PLAY";
+                    });
+                }
                 autoScrollRAF = requestAnimationFrame(autoScrollStep);
                 autoplayIcon.innerHTML = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"></path>';
                 autoplayLabel.textContent = "暂停 · PAUSE";

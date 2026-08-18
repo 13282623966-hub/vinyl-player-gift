@@ -57,6 +57,12 @@
   </style>
 </head>
 <body>
+  <!-- 优化公告弹窗（可关闭） -->
+  <div id="notice-popup" style="position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:99999;max-width:86vw;box-sizing:border-box;background:rgba(12,5,15,.94);border:1px solid rgba(223,184,119,.35);border-radius:14px;padding:14px 42px 14px 18px;box-shadow:0 10px 30px rgba(0,0,0,.55);font-family:'Inter',sans-serif;color:#fff;text-align:left;">
+    <button id="notice-close" type="button" aria-label="关闭" style="position:absolute;top:8px;right:10px;background:none;border:none;color:rgba(255,255,255,.55);font-size:20px;line-height:1;cursor:pointer;padding:4px;">×</button>
+    <div style="font-size:13px;font-weight:600;letter-spacing:.05em;margin-bottom:5px;">✨ 优化公告</div>
+    <div style="font-size:11.5px;color:rgba(255,255,255,.78);line-height:1.7;">手机端已适配：上滑浏览或点击 ▶ 播放，画面更流畅、加载更快。</div>
+  </div>
   <nav class="top-nav">
     <button class="nav-btn active" data-tab="album" type="button">Album</button>
     <button class="nav-btn" data-tab="memory" type="button">Memory</button>
@@ -173,7 +179,7 @@
 
   <!-- Memory 面板（懒加载：首次点击 Memory 才加载） -->
   <div class="tab-panel" id="panel-memory">
-    <iframe class="tab-iframe" data-src="./index-zxy.html?v=10" allowfullscreen></iframe>
+    <iframe class="tab-iframe" data-src="./index-zxy.html?v=11" allowfullscreen></iframe>
   </div>
 
   <!-- End 面板（懒加载：首次点击 End 才加载） -->
@@ -183,6 +189,20 @@
 
   <script>
     (function() {
+      // 优化公告弹窗：点 × 关闭（本次会话不再弹出）
+      var popup = document.getElementById('notice-popup');
+      var closeBtn = document.getElementById('notice-close');
+      if (popup && closeBtn) {
+        var closed = false;
+        try { closed = sessionStorage.getItem('noticeClosed') === '1'; } catch (e) {}
+        if (closed) { popup.parentNode.removeChild(popup); }
+        else {
+          closeBtn.addEventListener('click', function() {
+            popup.parentNode.removeChild(popup);
+            try { sessionStorage.setItem('noticeClosed', '1'); } catch (e) {}
+          });
+        }
+      }
       var btns = document.querySelectorAll('.nav-btn[data-tab]');
       var panels = {
         album: document.getElementById('panel-album'),
