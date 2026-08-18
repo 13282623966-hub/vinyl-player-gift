@@ -527,7 +527,7 @@
                     <div class="foil-shine absolute inset-0 z-10"></div>
                     <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[#0c0512]/10 to-[#0c0512]/90 z-10 pointer-events-none"></div>
 
-                    <img src="${meta.img}" alt="Memory" class="absolute inset-0 w-full h-full object-cover z-0 transition-transform duration-700 filter brightness-[0.98] contrast-[1.01] pointer-events-none" onerror="this.style.opacity=0">
+                    <img data-src="${meta.img}" alt="Memory" class="absolute inset-0 w-full h-full object-cover z-0 transition-transform duration-700 filter brightness-[0.98] contrast-[1.01] pointer-events-none" onerror="this.style.opacity=0">
 
                     <div class="flex justify-between items-center text-[7px] tracking-[0.2em] text-white/45 z-20 font-mono pointer-events-none">
                         <span>[MOMENT]</span>
@@ -734,6 +734,31 @@
             });
 
         }
+
+        // 渐进加载照片：分批错开请求，避免首屏 28 张同时下载导致卡顿
+        (function () {
+            const imgs = [];
+            cardsArray.forEach((c) => {
+                const im = c.querySelector("img[data-src]");
+                if (im) imgs.push(im);
+            });
+            const BATCH = 6, GAP = 300;
+            let idx = 0;
+            function loadNext() {
+                const end = Math.min(idx + BATCH, imgs.length);
+                for (let i = idx; i < end; i++) {
+                    const im = imgs[i];
+                    if (im && !im.getAttribute("src")) im.setAttribute("src", im.dataset.src);
+                }
+                idx = end;
+                if (idx < imgs.length) setTimeout(loadNext, GAP);
+            }
+            loadNext();
+            // 兜底：空闲后强制全部加载
+            const forceAll = () => imgs.forEach((im) => { if (im && !im.getAttribute("src")) im.setAttribute("src", im.dataset.src); });
+            if ("requestIdleCallback" in window) requestIdleCallback(forceAll);
+            setTimeout(forceAll, 8000);
+        })();
 
     </script>
 
